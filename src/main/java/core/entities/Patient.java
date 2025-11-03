@@ -1,7 +1,9 @@
 package core.entities;
 
 import core.enums.UserType;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Patient {
@@ -11,34 +13,35 @@ public class Patient {
     private String email;
     private String password;
     private final UserType userType;
-    private final ArrayList<Condition> conditions;
-    private final ArrayList<Encounter> encounters;
-    private final ArrayList<Observation> observations;
 
+    // Navigation properties
+    private List<Condition> conditions = new ArrayList<>();
+    private List<Encounter> encounters = new ArrayList<>();
+    private List<Observation> observations = new ArrayList<>();
+
+    // Full constructor (used when loading from DB or reconstructing from data)
     public Patient(UUID patientId, String fullName, String email, String password, UserType userType,
-                   ArrayList<Condition> conditions, ArrayList<Encounter> encounters, ArrayList<Observation> observations) {
+                   List<Condition> conditions, List<Encounter> encounters, List<Observation> observations) {
         this.patientId = patientId;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.userType = userType;
-        this.conditions = conditions;
-        this.encounters = encounters;
-        this.observations = observations;
+        this.conditions = (conditions != null) ? conditions : new ArrayList<>();
+        this.encounters = (encounters != null) ? encounters : new ArrayList<>();
+        this.observations = (observations != null) ? observations : new ArrayList<>();
     }
 
-    public Patient(String fullName, String email, String password, UserType userType,
-                   ArrayList<Condition> conditions, ArrayList<Encounter> encounters, ArrayList<Observation> observations) {
+    // Simplified constructor for new patients
+    public Patient(String fullName, String email, String password, UserType userType) {
         this.patientId = UUID.randomUUID();
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.userType = userType;
-        this.conditions = conditions;
-        this.encounters = encounters;
-        this.observations = observations;
     }
 
+    // Getters & setters
     public UUID getPatientId() {
         return patientId;
     }
@@ -71,18 +74,31 @@ public class Patient {
         return userType;
     }
 
-    public ArrayList<Condition> getConditions() {
+    public List<Condition> getConditions() {
         return conditions;
     }
 
-    public ArrayList<Encounter> getEncounters() {
+    public void setConditions(List<Condition> conditions) {
+        this.conditions = conditions;
+    }
+
+    public List<Encounter> getEncounters() {
         return encounters;
     }
 
-    public ArrayList<Observation> getObservations() {
+    public void setEncounters(List<Encounter> encounters) {
+        this.encounters = encounters;
+    }
+
+    public List<Observation> getObservations() {
         return observations;
     }
 
+    public void setObservations(List<Observation> observations) {
+        this.observations = observations;
+    }
+
+    // Convenience methods
     public void addCondition(Condition condition) {
         this.conditions.add(condition);
     }
@@ -113,11 +129,10 @@ public class Patient {
                 "patientId=" + patientId +
                 ", fullName='" + fullName + '\'' +
                 ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
                 ", userType=" + userType +
-                ", conditions=" + conditions +
-                ", encounters=" + encounters +
-                ", observations=" + observations +
+                ", conditions=" + conditions.size() +
+                ", encounters=" + encounters.size() +
+                ", observations=" + observations.size() +
                 '}';
     }
 }

@@ -2,6 +2,8 @@ package core.entities;
 
 import core.enums.UserType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Practitioner {
@@ -13,7 +15,14 @@ public class Practitioner {
     private final UserType userType;
     private Organization organization;
 
-    public Practitioner(UUID doctorId, String fullName, String email, String password, UserType userType, Organization organization) {
+    // Navigation properties
+    private List<Condition> conditions = new ArrayList<>();
+    private List<Encounter> encounters = new ArrayList<>();
+    private List<Observation> observations = new ArrayList<>();
+
+    // Full constructor
+    public Practitioner(UUID doctorId, String fullName, String email, String password,
+                        UserType userType, Organization organization) {
         this.doctorId = doctorId;
         this.fullName = fullName;
         this.email = email;
@@ -22,7 +31,9 @@ public class Practitioner {
         this.organization = organization;
     }
 
-    public Practitioner(String fullName, String email, String password, UserType userType, Organization organization) {
+    // Constructor for new practitioner creation
+    public Practitioner(String fullName, String email, String password,
+                        UserType userType, Organization organization) {
         this.doctorId = UUID.randomUUID();
         this.fullName = fullName;
         this.email = email;
@@ -31,6 +42,7 @@ public class Practitioner {
         this.organization = organization;
     }
 
+    // Getters and setters
     public UUID getDoctorId() {
         return doctorId;
     }
@@ -71,6 +83,30 @@ public class Practitioner {
         this.organization = organization;
     }
 
+    public List<Condition> getConditions() {
+        return conditions;
+    }
+
+    public void setConditions(List<Condition> conditions) {
+        this.conditions = conditions;
+    }
+
+    public List<Encounter> getEncounters() {
+        return encounters;
+    }
+
+    public void setEncounters(List<Encounter> encounters) {
+        this.encounters = encounters;
+    }
+
+    public List<Observation> getObservations() {
+        return observations;
+    }
+
+    public void setObservations(List<Observation> observations) {
+        this.observations = observations;
+    }
+
     @Override
     public String toString() {
         return "Practitioner{" +
@@ -80,6 +116,9 @@ public class Practitioner {
                 ", password='" + password + '\'' +
                 ", userType=" + userType +
                 ", organization=" + organization +
+                ", conditions=" + conditions.size() +
+                ", encounters=" + encounters.size() +
+                ", observations=" + observations.size() +
                 '}';
     }
 }
