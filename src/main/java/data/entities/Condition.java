@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "conditions")
-public class ConditionDb extends PanacheEntityBase {
+public class Condition extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -30,17 +30,17 @@ public class ConditionDb extends PanacheEntityBase {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "patient_id", nullable = false)
-    public PatientDb patient;
+    public Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "doctor_id", nullable = false)
-    public PractitionerDb doctor;
+    public Practitioner doctor;
 
     // Default constructor
-    public ConditionDb() {}
+    public Condition() {}
 
-    public ConditionDb(String conditionName, int severityLevel, ConditionType conditionType,
-                       LocalDate diagnosedDate, PatientDb patient, PractitionerDb doctor) {
+    public Condition(String conditionName, int severityLevel, ConditionType conditionType,
+                     LocalDate diagnosedDate, Patient patient, Practitioner doctor) {
         this.conditionName = conditionName;
         this.severityLevel = severityLevel;
         this.conditionType = conditionType;

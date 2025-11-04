@@ -7,34 +7,34 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "observations")
-public class ObservationDb extends PanacheEntityBase {
+@Table(name = "encounters")
+public class Encounter extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    public UUID observationId;
+    public UUID encounterId;
 
     @Column(nullable = false)
     public String description;
 
     @Column(nullable = false)
-    public LocalDateTime observationDate;
+    public LocalDateTime encounterDate;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "patient_id", nullable = false)
-    public PatientDb patient;
+    public Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "doctor_id", nullable = false)
-    public PractitionerDb doctor;
+    public Practitioner doctor;
 
     // Default constructor
-    public ObservationDb() {}
+    public Encounter() {}
 
-    public ObservationDb(String description, LocalDateTime observationDate,
-                         PatientDb patient, PractitionerDb doctor) {
+    public Encounter(String description, LocalDateTime encounterDate,
+                     Patient patient, Practitioner doctor) {
         this.description = description;
-        this.observationDate = observationDate;
+        this.encounterDate = encounterDate;
         this.patient = patient;
         this.doctor = doctor;
     }

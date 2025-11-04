@@ -15,7 +15,7 @@ import java.util.UUID;
                 @UniqueConstraint(columnNames = "email")
         }
 )
-public class PractitionerDb extends PanacheEntityBase {
+public class Practitioner extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -35,51 +35,51 @@ public class PractitionerDb extends PanacheEntityBase {
     public UserType userType;
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    public List<ConditionDb> conditions = new ArrayList<>();
+    public List<Condition> conditions = new ArrayList<>();
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    public List<EncounterDb> encounters = new ArrayList<>();
+    public List<Encounter> encounters = new ArrayList<>();
 
     @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    public List<ObservationDb> observations = new ArrayList<>();
+    public List<Observation> observations = new ArrayList<>();
 
     // Default constructor for JPA
-    public PractitionerDb() {}
+    public Practitioner() {}
 
     // Constructor for creation
-    public PractitionerDb(String fullName, String email, String password, UserType userType) {
+    public Practitioner(String fullName, String email, String password, UserType userType) {
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.userType = userType;
     }
 
-    public void addCondition(ConditionDb condition) {
+    public void addCondition(Condition condition) {
         conditions.add(condition);
         condition.doctor = this;
     }
 
-    public void removeCondition(ConditionDb condition) {
+    public void removeCondition(Condition condition) {
         conditions.remove(condition);
         condition.doctor = null;
     }
 
-    public void addEncounter(EncounterDb encounter) {
+    public void addEncounter(Encounter encounter) {
         encounters.add(encounter);
         encounter.doctor = this;
     }
 
-    public void removeEncounter(EncounterDb encounter) {
+    public void removeEncounter(Encounter encounter) {
         encounters.remove(encounter);
         encounter.doctor = null;
     }
 
-    public void addObservation(ObservationDb observation) {
+    public void addObservation(Observation observation) {
         observations.add(observation);
         observation.doctor = this;
     }
 
-    public void removeObservation(ObservationDb observation) {
+    public void removeObservation(Observation observation) {
         observations.remove(observation);
         observation.doctor = null;
     }

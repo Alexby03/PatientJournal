@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql:9.4
+    container_name: patientjournal-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: patientjournaldb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - /c/VSCProgram/Fullstack/PatientJournal/src/main/docker/mysql-init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-padmin"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+
+  app:
+    image: patientjournal-app
+    container_name: patientjournal-app-container
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      QUARKUS_DATASOURCE_REACTIVE_URL: mysql://patientjournal-mysql:3306/patientjournaldb
+      QUARKUS_DATASOURCE_USERNAME: ${QUARKUS_DATASOURCE_USERNAME}
+      QUARKUS_DATASOURCE_PASSWORD: ${QUARKUS_DATASOURCE_PASSWORD}
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql-data:

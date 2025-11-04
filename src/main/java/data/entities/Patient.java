@@ -15,7 +15,7 @@ import java.util.UUID;
                 @UniqueConstraint(columnNames = "email")
         }
 )
-public class PatientDb extends PanacheEntityBase {
+public class Patient extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -40,7 +40,7 @@ public class PatientDb extends PanacheEntityBase {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    public List<ConditionDb> conditions = new ArrayList<>();
+    public List<Condition> conditions = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "patient",
@@ -48,7 +48,7 @@ public class PatientDb extends PanacheEntityBase {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    public List<EncounterDb> encounters = new ArrayList<>();
+    public List<Encounter> encounters = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "patient",
@@ -56,14 +56,14 @@ public class PatientDb extends PanacheEntityBase {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    public List<ObservationDb> observations = new ArrayList<>();
+    public List<Observation> observations = new ArrayList<>();
 
     // Default constructor for JPA
-    public PatientDb() {
+    public Patient() {
     }
 
     // Constructor for creating patients
-    public PatientDb(String fullName, String email, String password, UserType userType) {
+    public Patient(String fullName, String email, String password, UserType userType) {
         this.fullName = fullName;
         this.email = email;
         this.password = password;
@@ -71,32 +71,32 @@ public class PatientDb extends PanacheEntityBase {
     }
 
     // Convenience methods for managing bidirectional relationships
-    public void addCondition(ConditionDb condition) {
+    public void addCondition(Condition condition) {
         conditions.add(condition);
         condition.patient = this;
     }
 
-    public void removeCondition(ConditionDb condition) {
+    public void removeCondition(Condition condition) {
         conditions.remove(condition);
         condition.patient = null;
     }
 
-    public void addEncounter(EncounterDb encounter) {
+    public void addEncounter(Encounter encounter) {
         encounters.add(encounter);
         encounter.patient = this;
     }
 
-    public void removeEncounter(EncounterDb encounter) {
+    public void removeEncounter(Encounter encounter) {
         encounters.remove(encounter);
         encounter.patient = null;
     }
 
-    public void addObservation(ObservationDb observation) {
+    public void addObservation(Observation observation) {
         observations.add(observation);
         observation.patient = this;
     }
 
-    public void removeObservation(ObservationDb observation) {
+    public void removeObservation(Observation observation) {
         observations.remove(observation);
         observation.patient = null;
     }

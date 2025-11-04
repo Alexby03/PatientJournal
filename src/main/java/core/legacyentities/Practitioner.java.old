@@ -1,4 +1,4 @@
-package core.entities;
+package core.legacyentities;
 
 import core.enums.UserType;
 
@@ -6,44 +6,45 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Patient {
+public class Practitioner {
 
-    private final UUID patientId;
+    private final UUID doctorId;
     private String fullName;
     private String email;
     private String password;
     private final UserType userType;
+    private Organization organization;
 
     // Navigation properties
     private List<Condition> conditions = new ArrayList<>();
     private List<Encounter> encounters = new ArrayList<>();
     private List<Observation> observations = new ArrayList<>();
 
-    // Full constructor (used when loading from DB or reconstructing from data)
-    public Patient(UUID patientId, String fullName, String email, String password, UserType userType,
-                   List<Condition> conditions, List<Encounter> encounters, List<Observation> observations) {
-        this.patientId = patientId;
+    // Full constructor
+    public Practitioner(UUID doctorId, String fullName, String email, String password,
+                        UserType userType, Organization organization) {
+        this.doctorId = doctorId;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.userType = userType;
-        this.conditions = (conditions != null) ? conditions : new ArrayList<>();
-        this.encounters = (encounters != null) ? encounters : new ArrayList<>();
-        this.observations = (observations != null) ? observations : new ArrayList<>();
+        this.organization = organization;
     }
 
-    // Simplified constructor for new patients
-    public Patient(String fullName, String email, String password, UserType userType) {
-        this.patientId = UUID.randomUUID();
+    // Constructor for new practitioner creation
+    public Practitioner(String fullName, String email, String password,
+                        UserType userType, Organization organization) {
+        this.doctorId = UUID.randomUUID();
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.userType = userType;
+        this.organization = organization;
     }
 
-    // Getters & setters
-    public UUID getPatientId() {
-        return patientId;
+    // Getters and setters
+    public UUID getDoctorId() {
+        return doctorId;
     }
 
     public String getFullName() {
@@ -74,6 +75,14 @@ public class Patient {
         return userType;
     }
 
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+
     public List<Condition> getConditions() {
         return conditions;
     }
@@ -98,38 +107,15 @@ public class Patient {
         this.observations = observations;
     }
 
-    // Convenience methods
-    public void addCondition(Condition condition) {
-        this.conditions.add(condition);
-    }
-
-    public void removeCondition(Condition condition) {
-        this.conditions.remove(condition);
-    }
-
-    public void addEncounter(Encounter encounter) {
-        this.encounters.add(encounter);
-    }
-
-    public void removeEncounter(Encounter encounter) {
-        this.encounters.remove(encounter);
-    }
-
-    public void addObservation(Observation observation) {
-        this.observations.add(observation);
-    }
-
-    public void removeObservation(Observation observation) {
-        this.observations.remove(observation);
-    }
-
     @Override
     public String toString() {
-        return "Patient{" +
-                "patientId=" + patientId +
+        return "Practitioner{" +
+                "doctorId=" + doctorId +
                 ", fullName='" + fullName + '\'' +
                 ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
                 ", userType=" + userType +
+                ", organization=" + organization +
                 ", conditions=" + conditions.size() +
                 ", encounters=" + encounters.size() +
                 ", observations=" + observations.size() +
