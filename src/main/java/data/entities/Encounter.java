@@ -12,30 +12,68 @@ public class Encounter extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    public UUID encounterId;
+    private UUID encounterId;
 
     @Column(nullable = false)
-    public String description;
+    private String description;
 
     @Column(nullable = false)
-    public LocalDateTime encounterDate;
+    private LocalDateTime encounterDate;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "patient_id", nullable = false)
-    public Patient patient;
+    private Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "doctor_id", nullable = false)
-    public Practitioner doctor;
+    @JoinColumn(name = "practitioner_id", nullable = false)
+    private Practitioner practitioner;
 
-    // Default constructor
     public Encounter() {}
 
     public Encounter(String description, LocalDateTime encounterDate,
-                     Patient patient, Practitioner doctor) {
+                     Patient patient, Practitioner practitioner) {
         this.description = description;
         this.encounterDate = encounterDate;
         this.patient = patient;
-        this.doctor = doctor;
+        this.practitioner = practitioner;
+    }
+
+    public UUID getEncounterId() {
+        return encounterId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public LocalDateTime getEncounterDate() {
+        return encounterDate;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public Practitioner getPractitioner() {
+        return practitioner;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public void setPractitioner(Practitioner practitioner) {
+        this.practitioner = practitioner;
+    }
+
+    @Override
+    public String toString() {
+        return "Encounter{" +
+                "encounterId=" + encounterId +
+                ", description='" + description + '\'' +
+                ", encounterDate=" + encounterDate +
+                ", patient=" + patient +
+                ", practitioner=" + practitioner +
+                '}';
     }
 }

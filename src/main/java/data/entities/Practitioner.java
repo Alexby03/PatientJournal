@@ -1,86 +1,69 @@
 package data.entities;
 
-import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
-import jakarta.persistence.*;
 import core.enums.UserType;
-
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
-@Table(
-        name = "practitioners",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "email")
-        }
-)
-public class Practitioner extends PanacheEntityBase {
+@DiscriminatorValue("PRACTITIONER")
+public class Practitioner extends User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    public UUID doctorId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organization organization;
 
-    @Column(nullable = false)
-    public String fullName;
+    @OneToMany(mappedBy = "practitioner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Condition> conditions = new ArrayList<>();
 
-    @Column(nullable = false, unique = true)
-    public String email;
+    @OneToMany(mappedBy = "practitioner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Encounter> encounters = new ArrayList<>();
 
-    @Column(nullable = false)
-    public String password;
+    @OneToMany(mappedBy = "practitioner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Observation> observations = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    public UserType userType;
-
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    public List<Condition> conditions = new ArrayList<>();
-
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    public List<Encounter> encounters = new ArrayList<>();
-
-    @OneToMany(mappedBy = "doctor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    public List<Observation> observations = new ArrayList<>();
-
-    // Default constructor for JPA
     public Practitioner() {}
 
-    // Constructor for creation
-    public Practitioner(String fullName, String email, String password, UserType userType) {
-        this.fullName = fullName;
-        this.email = email;
-        this.password = password;
-        this.userType = userType;
+    public Practitioner(String fullName, String email, String password, UserType userType, Organization organization) {
+        super(fullName, email, password, userType);
+        this.organization = organization;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
     }
 
     public void addCondition(Condition condition) {
         conditions.add(condition);
-        condition.doctor = this;
+        condition.setPractitioner(this);
     }
 
     public void removeCondition(Condition condition) {
         conditions.remove(condition);
-        condition.doctor = null;
+        condition.setPractitioner(null);
     }
 
     public void addEncounter(Encounter encounter) {
         encounters.add(encounter);
-        encounter.doctor = this;
+        encounter.setPractitioner(this);
     }
 
     public void removeEncounter(Encounter encounter) {
         encounters.remove(encounter);
-        encounter.doctor = null;
+        encounter.setPractitioner(null);
     }
 
     public void addObservation(Observation observation) {
         observations.add(observation);
-        observation.doctor = this;
+        observation.setPractitioner(this);
     }
 
     public void removeObservation(Observation observation) {
         observations.remove(observation);
-        observation.doctor = null;
+        observation.setPractitioner(null);
     }
 }

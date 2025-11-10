@@ -13,39 +13,87 @@ public class Condition extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    public UUID conditionId;
+    private UUID conditionId;
 
     @Column(nullable = false)
-    public String conditionName;
+    private String conditionName;
 
     @Column(nullable = false)
-    public int severityLevel;
+    private int severityLevel;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    public ConditionType conditionType;
+    private ConditionType conditionType;
 
     @Column(nullable = false)
-    public LocalDate diagnosedDate;
+    private LocalDate diagnosedDate;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "patient_id", nullable = false)
-    public Patient patient;
+    private Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "doctor_id", nullable = false)
-    public Practitioner doctor;
+    @JoinColumn(name = "practitioner_id", nullable = false)
+    private Practitioner practitioner;
 
-    // Default constructor
     public Condition() {}
 
     public Condition(String conditionName, int severityLevel, ConditionType conditionType,
-                     LocalDate diagnosedDate, Patient patient, Practitioner doctor) {
+                     LocalDate diagnosedDate, Patient patient, Practitioner practitioner) {
         this.conditionName = conditionName;
         this.severityLevel = severityLevel;
         this.conditionType = conditionType;
         this.diagnosedDate = diagnosedDate;
         this.patient = patient;
-        this.doctor = doctor;
+        this.practitioner = practitioner;
+    }
+
+    public UUID getConditionId() {
+        return conditionId;
+    }
+
+    public String getConditionName() {
+        return conditionName;
+    }
+
+    public int getSeverityLevel() {
+        return severityLevel;
+    }
+
+    public ConditionType getConditionType() {
+        return conditionType;
+    }
+
+    public LocalDate getDiagnosedDate() {
+        return diagnosedDate;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public Practitioner getPractitioner() {
+        return practitioner;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public void setPractitioner(Practitioner practitioner) {
+        this.practitioner = practitioner;
+    }
+
+    @Override
+    public String toString() {
+        return "Condition{" +
+                "conditionId=" + conditionId +
+                ", conditionName='" + conditionName + '\'' +
+                ", severityLevel=" + severityLevel +
+                ", conditionType=" + conditionType +
+                ", diagnosedDate=" + diagnosedDate +
+                ", patient=" + patient +
+                ", practitioner=" + practitioner +
+                '}';
     }
 }
