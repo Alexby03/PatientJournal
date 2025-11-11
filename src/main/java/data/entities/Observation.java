@@ -39,6 +39,10 @@ public class Observation extends PanacheEntityBase {
         this.practitioner = doctor;
     }
 
+    public void setDescription(String description) { this.description = description; }
+
+    public void setObservationDate(LocalDateTime observationDate) { this.observationDate = observationDate; }
+
     public UUID getObservationId() {
         return observationId;
     }

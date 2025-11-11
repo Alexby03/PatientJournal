@@ -69,6 +69,10 @@ public abstract class User extends PanacheEntityBase {
         return userType;
     }
 
+    public void setUserType(UserType userType) {
+        this.userType = userType;
+    }
+
     @Override
     public String toString() {
         return "User{" +

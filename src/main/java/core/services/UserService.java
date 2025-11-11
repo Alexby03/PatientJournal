@@ -54,8 +54,8 @@ public class UserService {
         return userRepository.countTotalUsers();
     }
 
-    // Helper method for password hashing (TODO: implement proper hashing)
+    // TODO: implement proper hashing
     private String hashPassword(String password) {
-        return password; // TODO: use BCrypt or similar
+        return password; // TODO: Keycloadk
     }
 }

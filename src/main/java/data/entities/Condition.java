@@ -48,6 +48,12 @@ public class Condition extends PanacheEntityBase {
         this.practitioner = practitioner;
     }
 
+    public void setConditionName(String conditionName) { this.conditionName = conditionName; }
+
+    public void setConditionType(ConditionType conditionType) { this.conditionType = conditionType; }
+
+    public void setDiagnosedDate(LocalDate diagnosedDate) { this.diagnosedDate = diagnosedDate; }
+
     public UUID getConditionId() {
         return conditionId;
     }
@@ -59,6 +65,8 @@ public class Condition extends PanacheEntityBase {
     public int getSeverityLevel() {
         return severityLevel;
     }
+
+    public void setSeverityLevel(int severityLevel) {this.severityLevel = severityLevel;}
 
     public ConditionType getConditionType() {
         return conditionType;

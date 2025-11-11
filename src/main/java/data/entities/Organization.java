@@ -37,6 +37,10 @@ public class Organization extends PanacheEntityBase {
         this.location = location;
     }
 
+    public void setOrganizationType(OrganizationType organizationType) { this.organizationType = organizationType; }
+
+    public void setPractitioners(List<Practitioner> practitioners) { this.practitioners = practitioners; }
+
     public UUID getOrganizationId() {
         return organizationId;
     }

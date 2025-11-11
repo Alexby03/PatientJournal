@@ -38,6 +38,10 @@ public class Encounter extends PanacheEntityBase {
         this.practitioner = practitioner;
     }
 
+    public void setDescription(String description) { this.description = description; }
+
+    public void setEncounterDate(LocalDateTime encounterDate) { this.encounterDate = encounterDate; }
+
     public UUID getEncounterId() {
         return encounterId;
     }

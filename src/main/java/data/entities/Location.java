@@ -26,6 +26,8 @@ public class Location extends PanacheEntityBase{
         this.locationType = locationType;
     }
 
+    public void setLocationType(LocationType locationType) { this.locationType = locationType; }
+
     public UUID getLocationId() {
         return locationId;
     }
