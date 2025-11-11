@@ -2,14 +2,16 @@ package data.repositories;
 
 import data.entities.Observation;
 import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class ObservationRepository implements PanacheRepository<Observation> {
+public class ObservationRepository implements PanacheRepositoryBase<Observation, UUID> {
 
     /**
      * Find observations by patient ID
@@ -50,11 +52,11 @@ public class ObservationRepository implements PanacheRepository<Observation> {
      * Get most recent observation for a patient
      */
     public Uni<Observation> findMostRecentByPatient(UUID patientId) {
-        return find("patient.id", patientId)
-                .stream()
-                .max((o1, o2) -> o1.getObservationDate().compareTo(o2.getObservationDate()))
-                .await()
-                .indefinitely();
+        return find("patient.id", patientId).list()
+                .onItem().transform(list -> list.stream()
+                        .max(Comparator.comparing(Observation::getObservationDate))
+                        .orElse(null)
+                );
     }
 
     /**

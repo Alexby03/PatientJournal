@@ -2,6 +2,7 @@ package data.repositories;
 
 import data.entities.Encounter;
 import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.time.LocalDateTime;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class EncounterRepository implements PanacheRepository<Encounter> {
+public class EncounterRepository implements PanacheRepositoryBase<Encounter, UUID> {
 
     /**
      * Find encounters by patient ID

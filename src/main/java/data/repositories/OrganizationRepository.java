@@ -3,12 +3,14 @@ package data.repositories;
 import data.entities.Organization;
 import core.enums.OrganizationType;
 import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
+import java.util.UUID;
 
 @ApplicationScoped
-public class OrganizationRepository implements PanacheRepository<Organization> {
+public class OrganizationRepository implements PanacheRepositoryBase<Organization, UUID> {
 
     /**
      * Find organizations by type

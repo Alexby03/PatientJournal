@@ -3,13 +3,14 @@ package data.repositories;
 import data.entities.Condition;
 import core.enums.ConditionType;
 import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class ConditionRepository implements PanacheRepository<Condition> {
+public class ConditionRepository implements PanacheRepositoryBase<Condition, UUID> {
 
     /**
      * Find conditions by patient ID

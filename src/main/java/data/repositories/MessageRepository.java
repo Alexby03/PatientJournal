@@ -2,6 +2,7 @@ package data.repositories;
 
 import data.entities.Message;
 import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class MessageRepository implements PanacheRepository<Message> {
+public class MessageRepository implements PanacheRepositoryBase<Message, UUID> {
 
     /**
      * Find messages by session ID

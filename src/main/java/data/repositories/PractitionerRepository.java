@@ -2,13 +2,14 @@ package data.repositories;
 
 import data.entities.Practitioner;
 import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class PractitionerRepository implements PanacheRepository<Practitioner> {
+public class PractitionerRepository implements PanacheRepositoryBase<Practitioner, UUID> {
 
     /**
      * Find practitioner by email

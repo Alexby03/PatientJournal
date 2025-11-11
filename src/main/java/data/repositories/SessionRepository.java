@@ -2,13 +2,14 @@ package data.repositories;
 
 import data.entities.Session;
 import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class SessionRepository implements PanacheRepository<Session> {
+public class SessionRepository implements PanacheRepositoryBase<Session, UUID> {
 
     /**
      * Find sessions by sender ID

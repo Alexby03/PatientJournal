@@ -3,12 +3,14 @@ package data.repositories;
 import data.entities.Location;
 import core.enums.LocationType;
 import io.quarkus.hibernate.reactive.panache.PanacheRepository;
+import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
+import java.util.UUID;
 
 @ApplicationScoped
-public class LocationRepository implements PanacheRepository<Location> {
+public class LocationRepository implements PanacheRepositoryBase<Location, UUID> {
 
     /**
      * Find locations by type
