@@ -1,5 +1,6 @@
 package data.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import core.enums.ConditionType;
@@ -30,11 +31,14 @@ public class Condition extends PanacheEntityBase {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "patient_id", nullable = false)
+    @JsonIgnore
     private Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "practitioner_id", nullable = false)
+    @JsonIgnore
     private Practitioner practitioner;
+
 
     public Condition() {}
 

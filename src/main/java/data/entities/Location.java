@@ -8,25 +8,22 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "locations")
-public class Location extends PanacheEntityBase{
+public class Location extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(nullable = false)
+    @Column(name = "location_id", nullable = false)
     private UUID locationId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "location_type", nullable = false)
     private LocationType locationType;
 
-    public Location() {
-    }
+    public Location() {}
 
     public Location(LocationType locationType) {
         this.locationType = locationType;
     }
-
-    public void setLocationType(LocationType locationType) { this.locationType = locationType; }
 
     public UUID getLocationId() {
         return locationId;
@@ -34,6 +31,10 @@ public class Location extends PanacheEntityBase{
 
     public LocationType getLocationType() {
         return locationType;
+    }
+
+    public void setLocationType(LocationType locationType) {
+        this.locationType = locationType;
     }
 
     @Override

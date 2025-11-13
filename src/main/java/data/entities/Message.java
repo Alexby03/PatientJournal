@@ -1,5 +1,6 @@
 package data.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 
@@ -15,13 +16,16 @@ public class Message extends PanacheEntityBase {
     @Column(name = "message_id")
     private UUID messageId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
+    @JsonIgnore
     private Session session;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false)
+    @JsonIgnore
     private User sender;
+
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;

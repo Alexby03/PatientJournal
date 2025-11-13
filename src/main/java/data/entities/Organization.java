@@ -1,5 +1,6 @@
 package data.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import core.enums.OrganizationType;
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.*;
@@ -14,19 +15,19 @@ public class Organization extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(nullable = false)
+    @Column(name = "organization_id", nullable = false)
     private UUID organizationId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "organization_type", nullable = false)
     private OrganizationType organizationType;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "location_id", nullable = false)
     private Location location;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "practitioner_id", nullable = false)
+    @JsonIgnore
+    @OneToMany(mappedBy = "organization", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Practitioner> practitioners = new ArrayList<>();
 
     public Organization() {

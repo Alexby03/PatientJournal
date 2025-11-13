@@ -12,6 +12,7 @@ public class Encounter extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "encounter_id", nullable = false)
     private UUID encounterId;
 
     @Column(nullable = false)

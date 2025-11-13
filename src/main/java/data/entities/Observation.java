@@ -12,6 +12,7 @@ public class Observation extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "observation_id", nullable = false)
     private UUID observationId;
 
     @Column(nullable = false)

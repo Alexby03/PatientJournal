@@ -1,13 +1,18 @@
 package api.resources;
 
-import data.entities.Session;
-import core.services.SessionService;
+import api.dto.SessionDTO;
 import api.dto.SessionCreateDTO;
+import core.mappers.SessionMapper;
+import core.services.SessionService;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Path("/api/sessions")
 @Produces(MediaType.APPLICATION_JSON)
@@ -23,8 +28,13 @@ public class SessionResource {
     @GET
     @Path("/user/{userId}")
     public Uni<Response> getUserSessions(@PathParam("userId") String userId) {
-        return sessionService.getUserSessions(java.util.UUID.fromString(userId))
-                .map(sessions -> Response.ok(sessions).build())
+        return sessionService.getUserSessions(UUID.fromString(userId))
+                .map(sessions -> {
+                    List<SessionDTO> dtos = sessions.stream()
+                            .map(SessionMapper::toDTO)
+                            .collect(Collectors.toList());
+                    return Response.ok(dtos).build();
+                })
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.BAD_REQUEST)
                                 .entity(err.getMessage())
@@ -37,12 +47,10 @@ public class SessionResource {
     @GET
     @Path("/{sessionId}")
     public Uni<Response> getSessionById(@PathParam("sessionId") String sessionId) {
-        return sessionService.getSessionById(java.util.UUID.fromString(sessionId))
+        return sessionService.getSessionById(UUID.fromString(sessionId))
                 .map(session -> {
-                    if (session == null) {
-                        return Response.status(Response.Status.NOT_FOUND).build();
-                    }
-                    return Response.ok(session).build();
+                    if (session == null) return Response.status(Response.Status.NOT_FOUND).build();
+                    return Response.ok(SessionMapper.toDTO(session)).build();
                 })
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
@@ -54,7 +62,9 @@ public class SessionResource {
     @POST
     public Uni<Response> createSession(SessionCreateDTO dto) {
         return sessionService.createSession(dto)
-                .map(created -> Response.status(Response.Status.CREATED).entity(created).build())
+                .map(created -> Response.status(Response.Status.CREATED)
+                        .entity(SessionMapper.toDTO(created))
+                        .build())
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.BAD_REQUEST)
                                 .entity(err.getMessage())
@@ -62,16 +72,19 @@ public class SessionResource {
     }
 
     /**
-     * GET /api/sessions/between
+     * GET /api/sessions/between?user1=...&user2=...
      */
     @GET
     @Path("/between")
     public Uni<Response> getSessionsBetweenUsers(@QueryParam("user1") String user1,
                                                  @QueryParam("user2") String user2) {
-        return sessionService.getSessionsBetweenUsers(
-                        java.util.UUID.fromString(user1),
-                        java.util.UUID.fromString(user2))
-                .map(sessions -> Response.ok(sessions).build())
+        return sessionService.getSessionsBetweenUsers(UUID.fromString(user1), UUID.fromString(user2))
+                .map(sessions -> {
+                    List<SessionDTO> dtos = sessions.stream()
+                            .map(SessionMapper::toDTO)
+                            .collect(Collectors.toList());
+                    return Response.ok(dtos).build();
+                })
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.BAD_REQUEST)
                                 .entity(err.getMessage())
@@ -84,8 +97,10 @@ public class SessionResource {
     @DELETE
     @Path("/{sessionId}")
     public Uni<Response> deleteSession(@PathParam("sessionId") String sessionId) {
-        return sessionService.deleteSession(java.util.UUID.fromString(sessionId))
-                .map(deleted -> Response.ok().build())
+        return sessionService.deleteSession(UUID.fromString(sessionId))
+                .map(deleted -> deleted
+                        ? Response.noContent().build()
+                        : Response.status(Response.Status.NOT_FOUND).build())
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
     }

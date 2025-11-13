@@ -1,5 +1,6 @@
 package data.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import core.enums.UserType;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -9,16 +10,19 @@ import java.util.List;
 @DiscriminatorValue("PRACTITIONER")
 public class Practitioner extends User {
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "practitioner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Condition> conditions = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "practitioner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Encounter> encounters = new ArrayList<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "practitioner", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Observation> observations = new ArrayList<>();
 

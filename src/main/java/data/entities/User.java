@@ -13,6 +13,7 @@ import java.util.UUID;
 public abstract class User extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
     private UUID id;
 
     @Column(nullable = false)

@@ -1,10 +1,10 @@
 package data.repositories;
 
 import data.entities.Practitioner;
-import io.quarkus.hibernate.reactive.panache.PanacheRepository;
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -15,41 +15,22 @@ public class PractitionerRepository implements PanacheRepositoryBase<Practitione
      * Find practitioner by email
      */
     public Uni<Practitioner> findByEmail(String email) {
-        return find("email", email).firstResult();
+        // Praktikanter har alltid en organization, filtrerar på email
+        return find("email = ?1", email).firstResult();
     }
 
     /**
-     * Find all practitioners by organization ID
+     * Find practitioners by organization
      */
     public Uni<List<Practitioner>> findByOrganizationId(UUID organizationId) {
-        return find("organization.organizationId", organizationId).list();
-    }
-
-    /**
-     * Get all practitioners with pagination
-     */
-    public Uni<List<Practitioner>> findAllPractitioners(int pageIndex, int pageSize) {
-        return findAll().page(pageIndex, pageSize).list();
+        // JPQL/HQL använder entitetsfält: organization.organizationId
+        return find("organization.organizationId = ?1", organizationId).list();
     }
 
     /**
      * Count practitioners in an organization
      */
     public Uni<Long> countByOrganization(UUID organizationId) {
-        return count("organization.organizationId", organizationId);
-    }
-
-    /**
-     * Search practitioners by full name
-     */
-    public Uni<List<Practitioner>> searchByName(String namePattern) {
-        return find("fullName like ?1", "%" + namePattern + "%").list();
-    }
-
-    /**
-     * Delete practitioner by email
-     */
-    public Uni<Boolean> deletePractitionerByEmail(String email) {
-        return delete("email", email).map(count -> count > 0);
+        return count("organization.organizationId = ?1", organizationId);
     }
 }

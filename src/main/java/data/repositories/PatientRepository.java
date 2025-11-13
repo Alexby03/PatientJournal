@@ -1,7 +1,6 @@
 package data.repositories;
 
 import data.entities.Patient;
-import io.quarkus.hibernate.reactive.panache.PanacheRepository;
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,31 +18,46 @@ public class PatientRepository implements PanacheRepositoryBase<Patient, UUID> {
     }
 
     /**
-     * Find patient by full name
-     */
-    public Uni<Patient> findByFullName(String fullName) {
-        return find("fullName", fullName).firstResult();
-    }
-
-    /**
-     * Get all patients with pagination
+     * Find all patients with pagination
      */
     public Uni<List<Patient>> findAllPatients(int pageIndex, int pageSize) {
         return findAll().page(pageIndex, pageSize).list();
     }
 
     /**
-     * Count total patients
+     * Search patients by name with pagination
      */
-    public Uni<Long> countPatients() {
-        return count();
+    public Uni<List<Patient>> searchByName(String namePattern, int pageIndex, int pageSize) {
+        return find("fullName like ?1", "%" + namePattern + "%")
+                .page(pageIndex, pageSize)
+                .list();
     }
 
     /**
-     * Find patients by partial name match (search functionality)
+     * Get all patients with all relations (if needed)
      */
-    public Uni<List<Patient>> searchByName(String namePattern) {
-        return find("fullName like ?1", "%" + namePattern + "%").list();
+    public Uni<List<Patient>> findAllWithRelations() {
+        return find("""
+            SELECT DISTINCT p
+            FROM Patient p
+            LEFT JOIN FETCH p.conditions
+            LEFT JOIN FETCH p.encounters
+            LEFT JOIN FETCH p.observations
+        """).list();
+    }
+
+    /**
+     * Find patient by ID with all relations
+     */
+    public Uni<Patient> findByIdWithRelations(UUID id) {
+        return find("""
+            SELECT p
+            FROM Patient p
+            LEFT JOIN FETCH p.conditions
+            LEFT JOIN FETCH p.encounters
+            LEFT JOIN FETCH p.observations
+            WHERE p.id = ?1
+        """, id).firstResult();
     }
 
     /**

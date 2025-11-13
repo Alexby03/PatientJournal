@@ -1,9 +1,8 @@
 package api.resources;
 
-import data.entities.Location;
+import api.dto.LocationDTO;
+import core.mappers.LocationMapper;
 import core.services.LocationService;
-import api.dto.LocationCreateDTO;
-import api.dto.LocationUpdateDTO;
 import core.enums.LocationType;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
@@ -25,7 +24,9 @@ public class LocationResource {
     @GET
     public Uni<Response> getAllLocations() {
         return locationService.getAllLocations()
-                .map(locations -> Response.ok(locations).build())
+                .map(locations -> Response.ok(
+                        locations.stream().map(LocationMapper::toDTO).toList()
+                ).build())
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
     }
@@ -41,38 +42,10 @@ public class LocationResource {
                     if (location == null) {
                         return Response.status(Response.Status.NOT_FOUND).build();
                     }
-                    return Response.ok(location).build();
+                    return Response.ok(LocationMapper.toDTO(location)).build();
                 })
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
-    }
-
-    /**
-     * POST /api/locations - Create location with DTO
-     */
-    @POST
-    public Uni<Response> createLocation(LocationCreateDTO dto) {
-        return locationService.createLocation(dto)
-                .map(created -> Response.status(Response.Status.CREATED).entity(created).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage())
-                                .build());
-    }
-
-    /**
-     * PUT /api/locations/{locationId} - Update location with DTO
-     */
-    @PUT
-    @Path("/{locationId}")
-    public Uni<Response> updateLocation(@PathParam("locationId") String locationId,
-                                        LocationUpdateDTO dto) {
-        return locationService.updateLocation(java.util.UUID.fromString(locationId), dto)
-                .map(location -> Response.ok(location).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage())
-                                .build());
     }
 
     /**
@@ -82,10 +55,11 @@ public class LocationResource {
     @Path("/type/{type}")
     public Uni<Response> getLocationsByType(@PathParam("type") String type) {
         return locationService.getLocationsByType(LocationType.valueOf(type))
-                .map(locations -> Response.ok(locations).build())
+                .map(locations -> Response.ok(
+                        locations.stream().map(LocationMapper::toDTO).toList()
+                ).build())
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage())
-                                .build());
+                                .entity(err.getMessage()).build());
     }
 }

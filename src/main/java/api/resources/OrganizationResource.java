@@ -2,9 +2,11 @@ package api.resources;
 
 import data.entities.Organization;
 import core.services.OrganizationService;
+import api.dto.OrganizationDTO;
 import api.dto.OrganizationCreateDTO;
 import api.dto.OrganizationUpdateDTO;
 import core.enums.OrganizationType;
+import core.mappers.OrganizationMapper;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -27,7 +29,10 @@ public class OrganizationResource {
             @QueryParam("pageIndex") @DefaultValue("0") int pageIndex,
             @QueryParam("pageSize") @DefaultValue("10") int pageSize) {
         return organizationService.getAllOrganizations(pageIndex, pageSize)
-                .map(organizations -> Response.ok(organizations).build())
+                .map(list -> list.stream()
+                        .map(OrganizationMapper::toDTO)
+                        .toList())
+                .map(dtos -> Response.ok(dtos).build())
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
     }
@@ -39,11 +44,10 @@ public class OrganizationResource {
     @Path("/{organizationId}")
     public Uni<Response> getOrganizationById(@PathParam("organizationId") String organizationId) {
         return organizationService.getOrganizationById(java.util.UUID.fromString(organizationId))
-                .map(organization -> {
-                    if (organization == null) {
-                        return Response.status(Response.Status.NOT_FOUND).build();
-                    }
-                    return Response.ok(organization).build();
+                .map(org -> {
+                    if (org == null) return Response.status(Response.Status.NOT_FOUND).build();
+                    OrganizationDTO dto = OrganizationMapper.toDTO(org);
+                    return Response.ok(dto).build();
                 })
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
@@ -55,7 +59,8 @@ public class OrganizationResource {
     @POST
     public Uni<Response> createOrganization(OrganizationCreateDTO dto) {
         return organizationService.createOrganization(dto)
-                .map(created -> Response.status(Response.Status.CREATED).entity(created).build())
+                .map(org -> Response.status(Response.Status.CREATED)
+                        .entity(OrganizationMapper.toDTO(org)).build())
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.BAD_REQUEST)
                                 .entity(err.getMessage())
@@ -70,7 +75,7 @@ public class OrganizationResource {
     public Uni<Response> updateOrganization(@PathParam("organizationId") String organizationId,
                                             OrganizationUpdateDTO dto) {
         return organizationService.updateOrganization(java.util.UUID.fromString(organizationId), dto)
-                .map(organization -> Response.ok(organization).build())
+                .map(org -> Response.ok(OrganizationMapper.toDTO(org)).build())
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.BAD_REQUEST)
                                 .entity(err.getMessage())
@@ -84,7 +89,10 @@ public class OrganizationResource {
     @Path("/type/{type}")
     public Uni<Response> getOrganizationsByType(@PathParam("type") String type) {
         return organizationService.getOrganizationsByType(OrganizationType.valueOf(type))
-                .map(organizations -> Response.ok(organizations).build())
+                .map(list -> list.stream()
+                        .map(OrganizationMapper::toDTO)
+                        .toList())
+                .map(dtos -> Response.ok(dtos).build())
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.BAD_REQUEST)
                                 .entity(err.getMessage())

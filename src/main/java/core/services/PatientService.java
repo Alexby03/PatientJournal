@@ -26,8 +26,12 @@ public class PatientService {
 
     /**
      * Get patient by ID
+     * Use eager fetch if you need relations, annars vanlig findById räcker
      */
-    public Uni<Patient> getPatientById(UUID patientId) {
+    public Uni<Patient> getPatientById(UUID patientId, boolean fetchRelations) {
+        if (fetchRelations) {
+            return patientRepository.findByIdWithRelations(patientId);
+        }
         return patientRepository.findById(patientId);
     }
 
@@ -42,7 +46,17 @@ public class PatientService {
     }
 
     /**
-     * Create a new patient from DTO
+     * Search patients by name (partial match)
+     */
+    public Uni<List<Patient>> searchPatientsByName(String namePattern, int pageIndex, int pageSize) {
+        if (namePattern == null || namePattern.isEmpty()) {
+            return Uni.createFrom().failure(new IllegalArgumentException("Search term cannot be empty"));
+        }
+        return patientRepository.searchByName(namePattern, pageIndex, pageSize);
+    }
+
+    /**
+     * Create a new patient
      */
     public Uni<Patient> createPatient(PatientCreateDTO dto) {
         if (dto.getFullName() == null || dto.getFullName().isEmpty()) {
@@ -73,7 +87,7 @@ public class PatientService {
     }
 
     /**
-     * Update patient information from DTO
+     * Update patient information
      */
     public Uni<Patient> updatePatient(UUID patientId, PatientUpdateDTO dto) {
         return patientRepository.findById(patientId)
@@ -95,17 +109,7 @@ public class PatientService {
     }
 
     /**
-     * Search patients by name
-     */
-    public Uni<List<Patient>> searchPatients(String searchTerm) {
-        if (searchTerm == null || searchTerm.isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Search term cannot be empty"));
-        }
-        return patientRepository.searchByName(searchTerm);
-    }
-
-    /**
-     * Delete a patient
+     * Delete a patient by ID
      */
     public Uni<Boolean> deletePatient(UUID patientId) {
         return patientRepository.deleteById(patientId);
@@ -115,7 +119,7 @@ public class PatientService {
      * Count total patients
      */
     public Uni<Long> countPatients() {
-        return patientRepository.countPatients();
+        return patientRepository.count();
     }
 
     private String hashPassword(String password) {

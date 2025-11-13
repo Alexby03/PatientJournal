@@ -10,6 +10,7 @@ import core.enums.UserType;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -21,13 +22,6 @@ public class PractitionerService {
 
     @Inject
     OrganizationRepository organizationRepository;
-
-    /**
-     * Get all practitioners with pagination
-     */
-    public Uni<List<Practitioner>> getAllPractitioners(int pageIndex, int pageSize) {
-        return practitionerRepository.findAllPractitioners(pageIndex, pageSize);
-    }
 
     /**
      * Get practitioner by ID
@@ -61,7 +55,7 @@ public class PractitionerService {
     }
 
     /**
-     * Create a new practitioner from DTO, maybe delete
+     * Create a new practitioner
      */
     public Uni<Practitioner> createPractitioner(PractitionerCreateDTO dto) {
         if (dto.getFullName() == null || dto.getFullName().isEmpty()) {
@@ -80,8 +74,7 @@ public class PractitionerService {
         return organizationRepository.findById(dto.getOrganizationId())
                 .chain(org -> {
                     if (org == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Organization not found"));
+                        return Uni.createFrom().failure(new IllegalArgumentException("Organization not found"));
                     }
 
                     return practitionerRepository.findByEmail(dto.getEmail())
@@ -91,7 +84,6 @@ public class PractitionerService {
                                             new IllegalArgumentException("Email already exists"));
                                 }
 
-                                // Create practitioner entity from DTO
                                 Practitioner practitioner = new Practitioner(
                                         dto.getFullName(),
                                         dto.getEmail(),
@@ -106,14 +98,13 @@ public class PractitionerService {
     }
 
     /**
-     * Update practitioner information from DTO
+     * Update practitioner
      */
     public Uni<Practitioner> updatePractitioner(UUID practitionerId, PractitionerUpdateDTO dto) {
         return practitionerRepository.findById(practitionerId)
                 .chain(practitioner -> {
                     if (practitioner == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Practitioner not found"));
+                        return Uni.createFrom().failure(new IllegalArgumentException("Practitioner not found"));
                     }
 
                     if (dto.getFullName() != null && !dto.getFullName().isEmpty()) {
@@ -142,6 +133,6 @@ public class PractitionerService {
     }
 
     private String hashPassword(String password) {
-        return password; // TODO: Keycloak
+        return password; // TODO: implement proper hashing
     }
 }
