@@ -4,6 +4,8 @@ import core.enums.OrganizationType;
 import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import core.enums.UserType;
+
+import java.util.List;
 import java.util.UUID;
 
 @Entity

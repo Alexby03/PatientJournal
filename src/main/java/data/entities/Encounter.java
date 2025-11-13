@@ -15,10 +15,9 @@ public class Encounter extends PanacheEntityBase {
     @Column(name = "encounter_id", nullable = false)
     private UUID encounterId;
 
-    @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "encounter_date", nullable = false)
     private LocalDateTime encounterDate;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

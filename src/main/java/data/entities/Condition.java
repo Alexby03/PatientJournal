@@ -14,19 +14,20 @@ public class Condition extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "condition_id", nullable = false)
     private UUID conditionId;
 
-    @Column(nullable = false)
+    @Column(name = "condition_name", nullable = false)
     private String conditionName;
 
-    @Column(nullable = false)
+    @Column(name = "severity_level", nullable = false)
     private int severityLevel;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "condition_type", nullable = false)
     private ConditionType conditionType;
 
-    @Column(nullable = false)
+    @Column(name = "diagnosed_date", nullable = false)
     private LocalDate diagnosedDate;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

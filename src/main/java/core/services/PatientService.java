@@ -1,10 +1,20 @@
 package core.services;
 
+import api.dto.*;
+import core.mappers.ConditionMapper;
+import core.mappers.EncounterMapper;
+import core.mappers.ObservationMapper;
+import core.mappers.PatientMapper;
+import data.entities.Condition;
+import data.entities.Encounter;
+import data.entities.Observation;
 import data.entities.Patient;
+import data.repositories.ConditionRepository;
+import data.repositories.EncounterRepository;
+import data.repositories.ObservationRepository;
 import data.repositories.PatientRepository;
-import api.dto.PatientCreateDTO;
-import api.dto.PatientUpdateDTO;
 import core.enums.UserType;
+import io.quarkus.hibernate.reactive.panache.Panache;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -16,6 +26,12 @@ public class PatientService {
 
     @Inject
     PatientRepository patientRepository;
+    @Inject
+    ConditionRepository conditionRepository;
+    @Inject
+    EncounterRepository encounterRepository;
+    @Inject
+    ObservationRepository observationRepository;
 
     /**
      * Get all patients with pagination
@@ -28,12 +44,35 @@ public class PatientService {
      * Get patient by ID
      * Use eager fetch if you need relations, annars vanlig findById räcker
      */
-    public Uni<Patient> getPatientById(UUID patientId, boolean fetchRelations) {
-        if (fetchRelations) {
-            return patientRepository.findByIdWithRelations(patientId);
+    public Uni<PatientDTO> getPatientById(UUID patientId, boolean fetchRelations) {
+        if (!fetchRelations) {
+            return patientRepository.findById(patientId)
+                    .map(PatientMapper::toDTO);
         }
-        return patientRepository.findById(patientId);
+
+        return patientRepository.findById(patientId)
+            .chain(patient -> {
+                if (patient == null) return Uni.createFrom().nullItem();
+
+                Uni<List<ConditionDTO>> conditions = conditionRepository.findByPatientId(patientId)
+                        .map(list -> list.stream().map(ConditionMapper::toDTO).toList());
+                Uni<List<EncounterDTO>> encounters = encounterRepository.findByPatientId(patientId)
+                        .map(list -> list.stream().map(EncounterMapper::toDTO).toList());
+                Uni<List<ObservationDTO>> observations = observationRepository.findByPatientId(patientId)
+                        .map(list -> list.stream().map(ObservationMapper::toDTO).toList());
+
+                return Uni.combine().all().unis(conditions, encounters, observations)
+                    .asTuple()
+                    .map(tuple -> {
+                        PatientDTO dto = PatientMapper.toDTO(patient);
+                        dto.conditions.addAll(tuple.getItem1());
+                        dto.encounters.addAll(tuple.getItem2());
+                        dto.observations.addAll(tuple.getItem3());
+                        return dto;
+                    });
+            });
     }
+
 
     /**
      * Get patient by email
@@ -82,7 +121,7 @@ public class PatientService {
                     patient.setPassword(hashPassword(dto.getPassword()));
                     patient.setUserType(UserType.Patient);
 
-                    return patientRepository.persist(patient);
+                    return Panache.withTransaction(() ->  patientRepository.persist(patient));
                 });
     }
 

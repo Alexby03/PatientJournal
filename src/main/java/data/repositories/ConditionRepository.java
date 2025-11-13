@@ -67,4 +67,5 @@ public class ConditionRepository implements PanacheRepositoryBase<Condition, UUI
     public Uni<List<Condition>> findPatientConditionsPaginated(UUID patientId, int pageIndex, int pageSize) {
         return find("patient.id", patientId).page(pageIndex, pageSize).list();
     }
+
 }

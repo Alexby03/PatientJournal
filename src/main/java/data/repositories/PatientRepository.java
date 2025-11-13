@@ -1,5 +1,6 @@
 package data.repositories;
 
+import data.entities.Condition;
 import data.entities.Patient;
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
@@ -31,19 +32,6 @@ public class PatientRepository implements PanacheRepositoryBase<Patient, UUID> {
         return find("fullName like ?1", "%" + namePattern + "%")
                 .page(pageIndex, pageSize)
                 .list();
-    }
-
-    /**
-     * Get all patients with all relations (if needed)
-     */
-    public Uni<List<Patient>> findAllWithRelations() {
-        return find("""
-            SELECT DISTINCT p
-            FROM Patient p
-            LEFT JOIN FETCH p.conditions
-            LEFT JOIN FETCH p.encounters
-            LEFT JOIN FETCH p.observations
-        """).list();
     }
 
     /**

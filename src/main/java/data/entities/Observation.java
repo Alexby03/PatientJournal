@@ -18,7 +18,7 @@ public class Observation extends PanacheEntityBase {
     @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "observation_date", nullable = false)
     private LocalDateTime observationDate;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -40,12 +40,10 @@ public class PatientResource {
     @GET
     @Path("/{patientId}")
     public Uni<Response> getPatientById(@PathParam("patientId") String patientId,
-                                        @QueryParam("fetchRelations") @DefaultValue("true") boolean fetchRelations) {
+                                        @QueryParam("fetchRelations") @DefaultValue("false") boolean fetchRelations) {
         return patientService.getPatientById(UUID.fromString(patientId), fetchRelations)
-                .map(patient -> {
-                    if (patient == null) return Response.status(Response.Status.NOT_FOUND).build();
-                    return Response.ok(PatientMapper.toDTO(patient)).build();
-                })
+                .map(dto -> dto == null ? Response.status(Response.Status.NOT_FOUND).build()
+                        : Response.ok(dto).build())
                 .onFailure().recoverWithItem(err ->
                         Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                                 .entity(err.getMessage()).build());
@@ -95,6 +93,13 @@ public class PatientResource {
                                 .entity(err.getMessage()).build());
     }
 
+    /**
+     * Searches by name
+     * @param searchTerm
+     * @param pageIndex
+     * @param pageSize
+     * @return
+     */
     @GET
     @Path("/search")
     public Uni<Response> searchPatients(@QueryParam("q") String searchTerm,

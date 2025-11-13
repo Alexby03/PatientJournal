@@ -70,4 +70,23 @@ public class Practitioner extends User {
         observations.remove(observation);
         observation.setPractitioner(null);
     }
+
+    public void setConditions(List<Condition> list) {
+        for (Condition condition : list) {
+            addCondition(condition);
+        }
+    }
+
+    public void setObservations(List<Observation> list) {
+        for (Observation observation : list) {
+            addObservation(observation);
+        }
+    }
+
+    public void setEncounters(List<Encounter> list) {
+        for (Encounter encounter : list) {
+            addEncounter(encounter);
+        }
+    }
+
 }
