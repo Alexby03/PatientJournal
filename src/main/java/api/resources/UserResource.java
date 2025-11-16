@@ -76,13 +76,8 @@ public class UserResource {
     /** User login */
     @POST
     @Path("/login")
-    public UserLoginDTO login(UserLoginRequest req) {
-        return userService.login(req.email, req.password);
-    }
-
-    public static class UserLoginRequest {
-        public String email;
-        public String password;
+    public UserDTO login(UserLoginDTO dto) {
+        return userService.login(dto.email, dto.password);
     }
 
     // =======================

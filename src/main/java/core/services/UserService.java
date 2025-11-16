@@ -91,7 +91,7 @@ public class UserService {
     // LOGIN
     // -------------------------------
 
-    public UserLoginDTO login(String email, String password) {
+    public UserDTO login(String email, String password) {
         if (email == null || password == null) {
             throw new IllegalArgumentException("Email and password cannot be null");
         }
@@ -101,16 +101,7 @@ public class UserService {
             throw new IllegalArgumentException("Invalid credentials");
         }
 
-        // Bestäm home page baserat på userType
-        String homePage;
-        switch (user.getUserType()) {
-            case Patient -> homePage = "/patient/home";
-            case OtherStaff -> homePage = "/practitioner/home";
-            case Doctor -> homePage = "/doctor/home";
-            default -> homePage = "/login";
-        }
-
-        return new UserLoginDTO(user.getId(), user.getUserType(), homePage);
+        return new UserDTO(user.getId(), user.getFullName(), user.getEmail(), user.getUserType());
     }
 
     // -------------------------------
