@@ -1,8 +1,7 @@
 package data.repositories;
 
 import data.entities.Session;
-import io.quarkus.hibernate.reactive.panache.PanacheRepository;
-import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
@@ -11,55 +10,74 @@ import java.util.UUID;
 @ApplicationScoped
 public class SessionRepository implements PanacheRepositoryBase<Session, UUID> {
 
-    /**
-     * Find sessions by sender ID
-     */
-    public Uni<List<Session>> findBySenderId(UUID senderId) {
-        return find("senderId.id", senderId).list();
+    public List<Session> findBySenderId(UUID senderId) {
+        return find("senderId", senderId).list();
     }
 
-    /**
-     * Find sessions by receiver ID
-     */
-    public Uni<List<Session>> findByReceiverId(UUID receiverId) {
-        return find("receiverId.id", receiverId).list();
+    public List<Session> findByReceiverId(UUID receiverId) {
+        return find("receiverId", receiverId).list();
     }
 
-    /**
-     * Find sessions between two users
-     */
-    public Uni<List<Session>> findSessionsBetweenUsers(UUID userId1, UUID userId2) {
-        return find("(senderId.id = ?1 and receiverId.id = ?2) or (senderId.id = ?2 and receiverId.id = ?1)",
+    public List<Session> findSessionsBetweenUsers(UUID userId1, UUID userId2) {
+        return find("(senderId = ?1 and receiverId = ?2) or (senderId = ?2 and receiverId = ?1)",
                 userId1, userId2).list();
     }
 
-    /**
-     * Search sessions by subject
-     */
-    public Uni<List<Session>> searchBySubject(String subjectPattern) {
+    public List<Session> searchBySubject(String subjectPattern) {
         return find("subject like ?1", "%" + subjectPattern + "%").list();
     }
 
-    /**
-     * Get all sessions for a user (sent or received)
-     */
-    public Uni<List<Session>> findAllUserSessions(UUID userId) {
-        return find("senderId.id = ?1 or receiverId.id = ?1", userId).list();
+    public List<Session> findAllUserSessions(UUID userId) {
+        return find("senderId = ?1 or receiverId = ?1", userId).list();
     }
 
-    /**
-     * Count sessions involving a user
-     */
-    public Uni<Long> countUserSessions(UUID userId) {
-        return count("senderId.id = ?1 or receiverId.id = ?1", userId);
+    public Long countUserSessions(UUID userId) {
+        return count("senderId = ?1 or receiverId = ?1", userId);
     }
 
-    /**
-     * Get sessions with pagination
-     */
-    public Uni<List<Session>> findSessionsWithPagination(UUID userId, int pageIndex, int pageSize) {
-        return find("senderId.id = ?1 or receiverId.id = ?1", userId)
+    public List<Session> findSessionsWithPagination(UUID userId, int pageIndex, int pageSize) {
+        return find("senderId = ?1 or receiverId = ?1", userId)
                 .page(pageIndex, pageSize)
                 .list();
     }
+
+    public Session findByIdSimple(UUID sessionId) {
+        return findById(sessionId);
+    }
+
+    public Session findByIdWithMessages(UUID sessionId) {
+        return find("SELECT s FROM Session s LEFT JOIN FETCH s.messages WHERE s.sessionId = ?1", sessionId)
+                .firstResult();
+    }
+
+    public List<Session> findBySenderIdWithMessages(UUID senderId) {
+        return find("""
+                SELECT DISTINCT s
+                FROM Session s
+                LEFT JOIN FETCH s.messages
+                WHERE s.senderId = ?1
+            """, senderId)
+                .list();
+    }
+
+    public List<Session> findByReceiverIdWithMessages(UUID receiverId) {
+        return find("""
+                SELECT DISTINCT s
+                FROM Session s
+                LEFT JOIN FETCH s.messages
+                WHERE s.receiverId = ?1
+            """, receiverId)
+                .list();
+    }
+
+    public List<Session> findAllUserSessionsWithMessages(UUID userId) {
+        return find("""
+                SELECT DISTINCT s
+                FROM Session s
+                LEFT JOIN FETCH s.messages
+                WHERE s.senderId = ?1 OR s.receiverId = ?1
+            """, userId)
+                .list();
+    }
+
 }

@@ -14,13 +14,4 @@ public class SessionCreateDTO {
         this.receiverId = receiverId;
         this.subject = subject;
     }
-
-    public UUID getSenderId() { return senderId; }
-    public void setSenderId(UUID senderId) { this.senderId = senderId; }
-
-    public UUID getReceiverId() { return receiverId; }
-    public void setReceiverId(UUID receiverId) { this.receiverId = receiverId; }
-
-    public String getSubject() { return subject; }
-    public void setSubject(String subject) { this.subject = subject; }
 }

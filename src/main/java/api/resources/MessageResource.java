@@ -1,19 +1,18 @@
 package api.resources;
 
-import api.dto.MessageDTO;
 import api.dto.MessageCreateDTO;
-import core.mappers.MessageMapper;
+import api.dto.MessageDTO;
 import core.services.MessageService;
-import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
-@Path("/api/messages")
+@Path("/messages")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class MessageResource {
@@ -21,80 +20,72 @@ public class MessageResource {
     @Inject
     MessageService messageService;
 
-    /**
-     * GET /api/messages/session/{sessionId}
-     */
+    // =======================
+    // GET Endpoints
+    // =======================
+
+    /** Get all messages in a session */
     @GET
     @Path("/session/{sessionId}")
-    public Uni<Response> getSessionMessages(@PathParam("sessionId") String sessionId) {
-        return messageService.getSessionMessages(java.util.UUID.fromString(sessionId))
-                .map(messages -> messages.stream()
-                        .map(MessageMapper::toDTO)
-                        .collect(Collectors.toList()))
-                .map(dtos -> Response.ok(dtos).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage())
-                                .build());
+    public List<MessageDTO> getSessionMessages(@PathParam("sessionId") UUID sessionId) {
+        return messageService.getSessionMessages(sessionId);
     }
 
-    /**
-     * GET /api/messages/{messageId}
-     */
+    /** Get message by ID */
     @GET
     @Path("/{messageId}")
-    public Uni<Response> getMessageById(@PathParam("messageId") String messageId) {
-        return messageService.getMessageById(java.util.UUID.fromString(messageId))
-                .map(MessageMapper::toDTO)
-                .map(dto -> {
-                    if (dto == null) return Response.status(Response.Status.NOT_FOUND).build();
-                    return Response.ok(dto).build();
-                })
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public MessageDTO getMessageById(@PathParam("messageId") UUID messageId) {
+        return messageService.getMessageById(messageId);
     }
 
-    /**
-     * POST /api/messages - Create message with DTO
-     */
-    @POST
-    public Uni<Response> createMessage(MessageCreateDTO dto) {
-        return messageService.createMessage(dto)
-                .map(MessageMapper::toDTO)
-                .map(createdDto -> Response.status(Response.Status.CREATED).entity(createdDto).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage())
-                                .build());
-    }
-
-    /**
-     * DELETE /api/messages/{messageId}
-     */
-    @DELETE
-    @Path("/{messageId}")
-    public Uni<Response> deleteMessage(@PathParam("messageId") String messageId) {
-        return messageService.deleteMessage(java.util.UUID.fromString(messageId))
-                .map(deleted -> deleted
-                        ? Response.noContent().build()
-                        : Response.status(Response.Status.NOT_FOUND).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
-    }
-
-    /**
-     * GET /api/messages/latest/session/{sessionId}
-     */
+    /** Get latest message in a session */
     @GET
     @Path("/latest/session/{sessionId}")
-    public Uni<Response> getLatestMessage(@PathParam("sessionId") String sessionId) {
-        return messageService.getLatestMessage(java.util.UUID.fromString(sessionId))
-                .map(MessageMapper::toDTO)
-                .map(dto -> {
-                    if (dto == null) return Response.status(Response.Status.NOT_FOUND).build();
-                    return Response.ok(dto).build();
-                })
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public MessageDTO getLatestMessage(@PathParam("sessionId") UUID sessionId) {
+        return messageService.getLatestMessage(sessionId);
+    }
+
+    /** Count messages in a session */
+    @GET
+    @Path("/count/session/{sessionId}")
+    public long countSessionMessages(@PathParam("sessionId") UUID sessionId) {
+        return messageService.countSessionMessages(sessionId);
+    }
+
+    /** Search messages by content */
+    @GET
+    @Path("/search")
+    public List<MessageDTO> searchMessages(@QueryParam("q") String searchTerm) {
+        return messageService.searchMessages(searchTerm);
+    }
+
+    // =======================
+    // POST Endpoints
+    // =======================
+
+    /** Create a new message */
+    @POST
+    @Transactional
+    public MessageDTO createMessage(MessageCreateDTO dto) {
+        return messageService.createMessage(dto);
+    }
+
+    // =======================
+    // DELETE Endpoints
+    // =======================
+
+    /** Delete a message */
+    @DELETE
+    @Path("/{messageId}")
+    @Transactional
+    public Response deleteMessage(@PathParam("messageId") UUID messageId) {
+        boolean deleted = messageService.deleteMessage(messageId);
+        if (deleted) {
+            return Response.noContent().build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Message not found")
+                    .build();
+        }
     }
 }

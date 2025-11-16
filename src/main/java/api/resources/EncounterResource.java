@@ -1,18 +1,19 @@
 package api.resources;
 
-import core.mappers.EncounterMapper;
-import core.services.EncounterService;
 import api.dto.EncounterCreateDTO;
+import api.dto.EncounterDTO;
 import api.dto.EncounterUpdateDTO;
-import io.smallrye.mutiny.Uni;
+import core.services.EncounterService;
+
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-@Path("/api/encounters")
+@Path("/encounters")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class EncounterResource {
@@ -20,87 +21,98 @@ public class EncounterResource {
     @Inject
     EncounterService encounterService;
 
+    // =======================
+    // GET Endpoints
+    // =======================
+
+    /** Get all encounters for a patient (optionally eager) */
     @GET
     @Path("/patient/{patientId}")
-    public Uni<Response> getPatientEncounters(@PathParam("patientId") String patientId) {
-        return encounterService.getPatientEncounters(UUID.fromString(patientId))
-                .map(encounters -> Response.ok(
-                        encounters.stream()
-                                .map(EncounterMapper::toDTO)
-                                .collect(Collectors.toList())
-                ).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage()).build());
+    public List<EncounterDTO> getPatientEncounters(
+            @PathParam("patientId") UUID patientId,
+            @QueryParam("eager") @DefaultValue("false") boolean eager
+    ) {
+        return encounterService.getPatientEncounters(patientId, eager);
     }
 
+    /** Get encounter by ID */
     @GET
     @Path("/{encounterId}")
-    public Uni<Response> getEncounterById(@PathParam("encounterId") String encounterId) {
-        return encounterService.getEncounterById(UUID.fromString(encounterId))
-                .map(encounter -> {
-                    if (encounter == null) {
-                        return Response.status(Response.Status.NOT_FOUND).build();
-                    }
-                    return Response.ok(EncounterMapper.toDTO(encounter)).build();
-                })
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public EncounterDTO getEncounterById(@PathParam("encounterId") UUID encounterId) {
+        return encounterService.getEncounterById(encounterId);
     }
 
-    @POST
-    @Path("/patient/{patientId}/practitioner/{practitionerId}")
-    public Uni<Response> createEncounter(@PathParam("patientId") String patientId,
-                                         @PathParam("practitionerId") String practitionerId,
-                                         EncounterCreateDTO dto) {
-        return encounterService.createEncounter(UUID.fromString(patientId), UUID.fromString(practitionerId), dto)
-                .map(created -> Response.status(Response.Status.CREATED)
-                        .entity(EncounterMapper.toDTO(created))
-                        .build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage()).build());
-    }
-
-    @PUT
-    @Path("/{encounterId}")
-    public Uni<Response> updateEncounter(@PathParam("encounterId") String encounterId,
-                                         EncounterUpdateDTO dto) {
-        return encounterService.updateEncounter(UUID.fromString(encounterId), dto)
-                .map(updated -> Response.ok(EncounterMapper.toDTO(updated)).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage()).build());
-    }
-
-    @DELETE
-    @Path("/{encounterId}")
-    public Uni<Response> deleteEncounter(@PathParam("encounterId") String encounterId) {
-        return encounterService.deleteEncounter(UUID.fromString(encounterId))
-                .map(deleted -> Response.ok().build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
-    }
-
+    /** Get recent encounters */
     @GET
     @Path("/recent")
-    public Uni<Response> getRecentEncounters() {
-        return encounterService.getRecentEncounters()
-                .map(encounters -> Response.ok(
-                        encounters.stream()
-                                .map(EncounterMapper::toDTO)
-                                .collect(Collectors.toList())
-                ).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public List<EncounterDTO> getRecentEncounters(@QueryParam("eager") @DefaultValue("false") boolean eager) {
+        return encounterService.getRecentEncounters(eager);
     }
 
+    /** Get all encounters for a practitioner */
+    @GET
+    @Path("/practitioner/{practitionerId}")
+    public List<EncounterDTO> getPractitionerEncounters(
+            @PathParam("practitionerId") UUID practitionerId,
+            @QueryParam("eager") @DefaultValue("false") boolean eager
+    ) {
+        return encounterService.getPractitionerEncounters(practitionerId, eager);
+    }
+
+    /** Count encounters for a patient */
     @GET
     @Path("/count/patient/{patientId}")
-    public Uni<Response> countPatientEncounters(@PathParam("patientId") String patientId) {
-        return encounterService.countPatientEncounters(UUID.fromString(patientId))
-                .map(count -> Response.ok(count).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public long countPatientEncounters(@PathParam("patientId") UUID patientId) {
+        return encounterService.countPatientEncounters(patientId);
+    }
+
+    // =======================
+    // POST Endpoints
+    // =======================
+
+    /** Create new encounter */
+    @POST
+    @Path("/patient/{patientId}/practitioner/{practitionerId}")
+    @Transactional
+    public EncounterDTO createEncounter(
+            @PathParam("patientId") UUID patientId,
+            @PathParam("practitionerId") UUID practitionerId,
+            EncounterCreateDTO dto
+    ) {
+        return encounterService.createEncounter(patientId, practitionerId, dto);
+    }
+
+    // =======================
+    // PUT Endpoints
+    // =======================
+
+    /** Update encounter */
+    @PUT
+    @Path("/{encounterId}")
+    @Transactional
+    public EncounterDTO updateEncounter(
+            @PathParam("encounterId") UUID encounterId,
+            EncounterUpdateDTO dto
+    ) {
+        return encounterService.updateEncounter(encounterId, dto);
+    }
+
+    // =======================
+    // DELETE Endpoints
+    // =======================
+
+    /** Delete encounter */
+    @DELETE
+    @Path("/{encounterId}")
+    @Transactional
+    public Response deleteEncounter(@PathParam("encounterId") UUID encounterId) {
+        boolean deleted = encounterService.deleteEncounter(encounterId);
+        if (deleted) {
+            return Response.noContent().build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Encounter not found")
+                    .build();
+        }
     }
 }

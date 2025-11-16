@@ -1,20 +1,19 @@
 package api.resources;
 
-import data.entities.Patient;
-import core.services.PatientService;
 import api.dto.PatientCreateDTO;
-import api.dto.PatientUpdateDTO;
 import api.dto.PatientDTO;
-import core.mappers.PatientMapper;
-import io.smallrye.mutiny.Uni;
+import api.dto.PatientUpdateDTO;
+import core.services.PatientService;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
-@Path("/api/patients")
+import java.util.List;
+import java.util.UUID;
+
+@Path("/patients")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class PatientResource {
@@ -22,107 +21,85 @@ public class PatientResource {
     @Inject
     PatientService patientService;
 
+    // =======================
+    // GET Endpoints
+    // =======================
+
+    /** Get all patients with pagination */
     @GET
-    public Uni<Response> getAllPatients(
+    public List<PatientDTO> getAllPatients(
             @QueryParam("pageIndex") @DefaultValue("0") int pageIndex,
-            @QueryParam("pageSize") @DefaultValue("10") int pageSize) {
-        return patientService.getAllPatients(pageIndex, pageSize)
-                .map(patients -> Response.ok(
-                        patients.stream()
-                                .map(PatientMapper::toDTO)
-                                .collect(Collectors.toList())
-                ).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                                .entity(err.getMessage()).build());
+            @QueryParam("pageSize") @DefaultValue("10") int pageSize,
+            @QueryParam("fetchRelations") @DefaultValue("false") boolean fetchRelations) {
+        return patientService.getAllPatients(pageIndex, pageSize, fetchRelations);
     }
 
+    /** Get patient by ID */
     @GET
     @Path("/{patientId}")
-    public Uni<Response> getPatientById(@PathParam("patientId") String patientId,
-                                        @QueryParam("fetchRelations") @DefaultValue("false") boolean fetchRelations) {
-        return patientService.getPatientById(UUID.fromString(patientId), fetchRelations)
-                .map(dto -> dto == null ? Response.status(Response.Status.NOT_FOUND).build()
-                        : Response.ok(dto).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                                .entity(err.getMessage()).build());
+    public PatientDTO getPatientById(@PathParam("patientId") UUID patientId,
+                                     @QueryParam("fetchRelations") @DefaultValue("false") boolean fetchRelations) {
+        return patientService.getPatientById(patientId, fetchRelations);
     }
 
+    /** Get patient by email */
     @GET
     @Path("/email/{email}")
-    public Uni<Response> getPatientByEmail(@PathParam("email") String email) {
-        return patientService.getPatientByEmail(email)
-                .map(patient -> {
-                    if (patient == null) return Response.status(Response.Status.NOT_FOUND).build();
-                    return Response.ok(PatientMapper.toDTO(patient)).build();
-                })
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                                .entity(err.getMessage()).build());
+    public PatientDTO getPatientByEmail(@PathParam("email") String email,
+                                        @QueryParam("fetchRelations") @DefaultValue("false") boolean fetchRelations) {
+        return patientService.getPatientByEmail(email, fetchRelations);
     }
 
-    @POST
-    public Uni<Response> createPatient(PatientCreateDTO dto) {
-        return patientService.createPatient(dto)
-                .map(created -> Response.status(Response.Status.CREATED)
-                        .entity(PatientMapper.toDTO(created))
-                        .build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage()).build());
-    }
-
-    @PUT
-    @Path("/{patientId}")
-    public Uni<Response> updatePatient(@PathParam("patientId") String patientId, PatientUpdateDTO dto) {
-        return patientService.updatePatient(UUID.fromString(patientId), dto)
-                .map(updated -> Response.ok(PatientMapper.toDTO(updated)).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage()).build());
-    }
-
-    @DELETE
-    @Path("/{patientId}")
-    public Uni<Response> deletePatient(@PathParam("patientId") String patientId) {
-        return patientService.deletePatient(UUID.fromString(patientId))
-                .map(deleted -> Response.ok().build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                                .entity(err.getMessage()).build());
-    }
-
-    /**
-     * Searches by name
-     * @param searchTerm
-     * @param pageIndex
-     * @param pageSize
-     * @return
-     */
+    /** Search patients by name */
     @GET
     @Path("/search")
-    public Uni<Response> searchPatients(@QueryParam("q") String searchTerm,
-                                        @QueryParam("pageIndex") @DefaultValue("0") int pageIndex,
-                                        @QueryParam("pageSize") @DefaultValue("10") int pageSize) {
-        return patientService.searchPatientsByName(searchTerm, pageIndex, pageSize)
-                .map(list -> Response.ok(
-                        list.stream()
-                                .map(PatientMapper::toDTO)
-                                .collect(Collectors.toList())
-                ).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage()).build());
+    public List<PatientDTO> searchPatients(@QueryParam("q") String searchTerm,
+                                           @QueryParam("pageIndex") @DefaultValue("0") int pageIndex,
+                                           @QueryParam("pageSize") @DefaultValue("10") int pageSize,
+                                           @QueryParam("fetchRelations") @DefaultValue("false") boolean fetchRelations) {
+        return patientService.searchPatientsByName(searchTerm, pageIndex, pageSize, fetchRelations);
     }
 
+    /** Count total patients */
     @GET
     @Path("/count")
-    public Uni<Response> countPatients() {
-        return patientService.countPatients()
-                .map(count -> Response.ok(count).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                                .entity(err.getMessage()).build());
+    public long countPatients() {
+        return patientService.countPatients();
+    }
+
+    // =======================
+    // POST Endpoint
+    // =======================
+
+    /** Create a new patient */
+    @POST
+    @Transactional
+    public PatientDTO createPatient(PatientCreateDTO dto) {
+        return patientService.createPatient(dto);
+    }
+
+    // =======================
+    // PUT Endpoint
+    // =======================
+
+    /** Update existing patient */
+    @PUT
+    @Path("/{patientId}")
+    @Transactional
+    public PatientDTO updatePatient(@PathParam("patientId") UUID patientId, PatientUpdateDTO dto) {
+        return patientService.updatePatient(patientId, dto);
+    }
+
+    // =======================
+    // DELETE Endpoint
+    // =======================
+
+    /** Delete patient */
+    @DELETE
+    @Path("/{patientId}")
+    @Transactional
+    public Response deletePatient(@PathParam("patientId") UUID patientId) {
+        boolean deleted = patientService.deletePatient(patientId);
+        return deleted ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
     }
 }

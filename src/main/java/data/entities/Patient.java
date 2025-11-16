@@ -70,6 +70,18 @@ public class Patient extends User {
         }
     }
 
+    public List<Condition> getConditions() {
+        return conditions;
+    }
+
+    public List<Encounter> getEncounters() {
+        return encounters;
+    }
+
+    public List<Observation> getObservations() {
+        return observations;
+    }
+
     @Override
     public String toString() {
         return "Patient{" +

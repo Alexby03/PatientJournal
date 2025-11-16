@@ -1,18 +1,23 @@
 package core.services;
 
-import data.entities.Practitioner;
-import data.entities.Organization;
-import data.repositories.PractitionerRepository;
-import data.repositories.OrganizationRepository;
+import api.dto.PatientDTO;
 import api.dto.PractitionerCreateDTO;
+import api.dto.PractitionerDTO;
 import api.dto.PractitionerUpdateDTO;
 import core.enums.UserType;
-import io.smallrye.mutiny.Uni;
+import core.mappers.DTOMapper;
+import data.entities.Organization;
+import data.entities.Patient;
+import data.entities.Practitioner;
+import data.repositories.OrganizationRepository;
+import data.repositories.PractitionerRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class PractitionerService {
@@ -23,113 +28,120 @@ public class PractitionerService {
     @Inject
     OrganizationRepository organizationRepository;
 
-    /**
-     * Get practitioner by ID
-     */
-    public Uni<Practitioner> getPractitionerById(UUID practitionerId) {
-        return practitionerRepository.findById(practitionerId);
+    public List<PractitionerDTO> getAllPatients(int pageIndex, int pageSize, boolean eager) {
+        List<Practitioner> practitioners = eager
+                ? practitionerRepository.findAllPractitionersWithRelations(pageIndex, pageSize)
+                : practitionerRepository.findAllPractitioners(pageIndex, pageSize);
+        return practitioners.stream()
+                .map(p -> DTOMapper.toPractitionerDTO(p, eager))
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Get practitioners by organization
-     */
-    public Uni<List<Practitioner>> getPractitionersByOrganization(UUID organizationId) {
-        return organizationRepository.findById(organizationId)
-                .chain(org -> {
-                    if (org == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Organization not found"));
-                    }
-                    return practitionerRepository.findByOrganizationId(organizationId);
-                });
+    public PractitionerDTO getPractitionerById(UUID practitionerId, boolean eager) {
+        Practitioner practitioner = eager
+                ? practitionerRepository.findByIdWithRelations(practitionerId)
+                : practitionerRepository.findById(practitionerId);
+        if (practitioner == null) {
+            throw new IllegalArgumentException("Practitioner not found");
+        }
+        return DTOMapper.toPractitionerDTO(practitioner, eager);
     }
 
-    /**
-     * Get practitioner by email
-     */
-    public Uni<Practitioner> getPractitionerByEmail(String email) {
+    public List<PractitionerDTO> getPractitionersByOrganization(UUID organizationId, boolean eager) {
+        Organization org = organizationRepository.findById(organizationId);
+        if (org == null) {
+            throw new IllegalArgumentException("Organization not found");
+        }
+
+        List<Practitioner> practitioners = eager
+                ? practitionerRepository.findByOrganizationIdWithRelations(organizationId)
+                : practitionerRepository.findByOrganizationId(organizationId);
+        return practitioners.stream()
+                .map(p -> DTOMapper.toPractitionerDTO(p, eager))
+                .collect(Collectors.toList());
+    }
+
+    public PractitionerDTO getPractitionerByEmail(String email, boolean eager) {
         if (email == null || email.isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Email cannot be empty"));
+            throw new IllegalArgumentException("Email cannot be empty");
         }
-        return practitionerRepository.findByEmail(email);
+        Practitioner practitioner = eager
+                ? practitionerRepository.findByEmailWithRelations(email)
+                :  practitionerRepository.findByEmail(email);
+        if (practitioner == null) {
+            throw new IllegalArgumentException("Practitioner not found");
+        }
+        return DTOMapper.toPractitionerDTO(practitioner, eager);
     }
 
-    /**
-     * Create a new practitioner
-     */
-    public Uni<Practitioner> createPractitioner(PractitionerCreateDTO dto) {
-        if (dto.getFullName() == null || dto.getFullName().isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Full name is required"));
-        }
-        if (dto.getEmail() == null || dto.getEmail().isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Email is required"));
-        }
-        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Password is required"));
-        }
-        if (dto.getOrganizationId() == null) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Organization ID is required"));
+
+    @Transactional
+    public PractitionerDTO createPractitioner(PractitionerCreateDTO dto) {
+        validateCreateDTO(dto);
+
+        Organization org = organizationRepository.findById(dto.organizationId);
+        if (org == null) {
+            throw new IllegalArgumentException("Organization not found");
         }
 
-        return organizationRepository.findById(dto.getOrganizationId())
-                .chain(org -> {
-                    if (org == null) {
-                        return Uni.createFrom().failure(new IllegalArgumentException("Organization not found"));
-                    }
+        Practitioner existing = practitionerRepository.findByEmail(dto.email);
+        if (existing != null) {
+            throw new IllegalArgumentException("Email already exists");
+        }
 
-                    return practitionerRepository.findByEmail(dto.getEmail())
-                            .chain(existing -> {
-                                if (existing != null) {
-                                    return Uni.createFrom().failure(
-                                            new IllegalArgumentException("Email already exists"));
-                                }
+        Practitioner practitioner = new Practitioner(
+                dto.fullName,
+                dto.email,
+                hashPassword(dto.password),
+                UserType.Doctor,
+                org
+        );
 
-                                Practitioner practitioner = new Practitioner(
-                                        dto.getFullName(),
-                                        dto.getEmail(),
-                                        hashPassword(dto.getPassword()),
-                                        UserType.Doctor,
-                                        org
-                                );
-
-                                return practitionerRepository.persist(practitioner);
-                            });
-                });
+        practitionerRepository.persist(practitioner);
+        return DTOMapper.toPractitionerDTO(practitioner, false);
     }
 
-    /**
-     * Update practitioner
-     */
-    public Uni<Practitioner> updatePractitioner(UUID practitionerId, PractitionerUpdateDTO dto) {
-        return practitionerRepository.findById(practitionerId)
-                .chain(practitioner -> {
-                    if (practitioner == null) {
-                        return Uni.createFrom().failure(new IllegalArgumentException("Practitioner not found"));
-                    }
+    @Transactional
+    public PractitionerDTO updatePractitioner(UUID practitionerId, PractitionerUpdateDTO dto) {
+        Practitioner practitioner = practitionerRepository.findById(practitionerId);
+        if (practitioner == null) {
+            throw new IllegalArgumentException("Practitioner not found");
+        }
 
-                    if (dto.getFullName() != null && !dto.getFullName().isEmpty()) {
-                        practitioner.setFullName(dto.getFullName());
-                    }
-                    if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
-                        practitioner.setPassword(hashPassword(dto.getPassword()));
-                    }
+        if (dto.fullName != null && !dto.fullName.isEmpty()) {
+            practitioner.setFullName(dto.fullName);
+        }
+        if (dto.password != null && !dto.password.isEmpty()) {
+            practitioner.setPassword(hashPassword(dto.password));
+        }
 
-                    return practitionerRepository.persist(practitioner);
-                });
+        practitionerRepository.persist(practitioner);
+        return DTOMapper.toPractitionerDTO(practitioner, false);
     }
 
-    /**
-     * Delete a practitioner
-     */
-    public Uni<Boolean> deletePractitioner(UUID practitionerId) {
+    @Transactional
+    public boolean deletePractitioner(UUID practitionerId) {
         return practitionerRepository.deleteById(practitionerId);
     }
 
-    /**
-     * Count practitioners in an organization
-     */
-    public Uni<Long> countPractitionersByOrganization(UUID organizationId) {
+    public long countPractitionersByOrganization(UUID organizationId) {
         return practitionerRepository.countByOrganization(organizationId);
+    }
+
+
+    private void validateCreateDTO(PractitionerCreateDTO dto) {
+        if (dto.fullName == null || dto.fullName.isEmpty()) {
+            throw new IllegalArgumentException("Full name is required");
+        }
+        if (dto.email == null || dto.email.isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (dto.password == null || dto.password.isEmpty()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+        if (dto.organizationId == null) {
+            throw new IllegalArgumentException("Organization ID is required");
+        }
     }
 
     private String hashPassword(String password) {

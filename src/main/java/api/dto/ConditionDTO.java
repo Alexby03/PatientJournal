@@ -10,17 +10,19 @@ public class ConditionDTO {
     public ConditionType conditionType;
     public int severityLevel;
     public LocalDate diagnosedDate;
-    public String practitionerName;
-    public String patientName;
+    public UUID practitionerId;
+    public UUID patientId;
+
+    public ConditionDTO() {}
 
     public ConditionDTO(UUID conditionId, String conditionName, ConditionType conditionType,
-                        int severityLevel, LocalDate diagnosedDate, String practitionerName, String patientName) {
+                        int severityLevel, LocalDate diagnosedDate, UUID practitionerId, UUID patientId) {
         this.conditionId = conditionId;
         this.conditionName = conditionName;
         this.conditionType = conditionType;
         this.severityLevel = severityLevel;
         this.diagnosedDate = diagnosedDate;
-        this.practitionerName = practitionerName;
-        this.patientName = patientName;
+        this.practitionerId = practitionerId;
+        this.patientId = patientId;
     }
 }

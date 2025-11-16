@@ -1,167 +1,159 @@
 package core.services;
 
 import api.dto.*;
-import core.mappers.ConditionMapper;
-import core.mappers.EncounterMapper;
-import core.mappers.ObservationMapper;
-import core.mappers.PatientMapper;
-import data.entities.Condition;
-import data.entities.Encounter;
-import data.entities.Observation;
+import core.enums.UserType;
+import core.mappers.DTOMapper;
 import data.entities.Patient;
 import data.repositories.ConditionRepository;
 import data.repositories.EncounterRepository;
 import data.repositories.ObservationRepository;
 import data.repositories.PatientRepository;
-import core.enums.UserType;
-import io.quarkus.hibernate.reactive.panache.Panache;
-import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class PatientService {
 
     @Inject
     PatientRepository patientRepository;
+
     @Inject
     ConditionRepository conditionRepository;
+
     @Inject
     EncounterRepository encounterRepository;
+
     @Inject
     ObservationRepository observationRepository;
+
 
     /**
      * Get all patients with pagination
      */
-    public Uni<List<Patient>> getAllPatients(int pageIndex, int pageSize) {
-        return patientRepository.findAllPatients(pageIndex, pageSize);
+    public List<PatientDTO> getAllPatients(int pageIndex, int pageSize, boolean eager) {
+        List<Patient> patients = eager
+                ? patientRepository.findAllPatientsWithRelations(pageIndex, pageSize)
+                : patientRepository.findAllPatients(pageIndex, pageSize);
+        return patients.stream()
+                .map(p -> DTOMapper.toPatientDTO(p, eager))
+                .collect(Collectors.toList());
     }
 
     /**
-     * Get patient by ID
-     * Use eager fetch if you need relations, annars vanlig findById räcker
+     * Get patient by ID, optionally fetch relations
      */
-    public Uni<PatientDTO> getPatientById(UUID patientId, boolean fetchRelations) {
-        if (!fetchRelations) {
-            return patientRepository.findById(patientId)
-                    .map(PatientMapper::toDTO);
+    public PatientDTO getPatientById(UUID patientId, boolean eager) {
+        Patient patient = eager
+                ? patientRepository.findByIdWithRelations(patientId)
+                : patientRepository.findById(patientId);
+
+        if (patient == null) {
+            throw new IllegalArgumentException("Patient not found");
         }
 
-        return patientRepository.findById(patientId)
-            .chain(patient -> {
-                if (patient == null) return Uni.createFrom().nullItem();
-
-                Uni<List<ConditionDTO>> conditions = conditionRepository.findByPatientId(patientId)
-                        .map(list -> list.stream().map(ConditionMapper::toDTO).toList());
-                Uni<List<EncounterDTO>> encounters = encounterRepository.findByPatientId(patientId)
-                        .map(list -> list.stream().map(EncounterMapper::toDTO).toList());
-                Uni<List<ObservationDTO>> observations = observationRepository.findByPatientId(patientId)
-                        .map(list -> list.stream().map(ObservationMapper::toDTO).toList());
-
-                return Uni.combine().all().unis(conditions, encounters, observations)
-                    .asTuple()
-                    .map(tuple -> {
-                        PatientDTO dto = PatientMapper.toDTO(patient);
-                        dto.conditions.addAll(tuple.getItem1());
-                        dto.encounters.addAll(tuple.getItem2());
-                        dto.observations.addAll(tuple.getItem3());
-                        return dto;
-                    });
-            });
+        return DTOMapper.toPatientDTO(patient, eager);
     }
-
 
     /**
      * Get patient by email
      */
-    public Uni<Patient> getPatientByEmail(String email) {
+    public PatientDTO getPatientByEmail(String email, boolean eager) {
         if (email == null || email.isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Email cannot be empty"));
+            throw new IllegalArgumentException("Email cannot be empty");
         }
-        return patientRepository.findByEmail(email);
+
+        Patient patient = eager
+                ? patientRepository.findByEmailWithRelations(email)
+                : patientRepository.findByEmail(email);
+
+        if (patient == null) return null;
+
+        return DTOMapper.toPatientDTO(patient, eager);
     }
 
     /**
      * Search patients by name (partial match)
      */
-    public Uni<List<Patient>> searchPatientsByName(String namePattern, int pageIndex, int pageSize) {
+    public List<PatientDTO> searchPatientsByName(String namePattern, int pageIndex, int pageSize, boolean eager) {
         if (namePattern == null || namePattern.isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Search term cannot be empty"));
+            throw new IllegalArgumentException("Search term cannot be empty");
         }
-        return patientRepository.searchByName(namePattern, pageIndex, pageSize);
+
+        List<Patient> patients = eager
+                ? patientRepository.searchByNameWithRelations(namePattern, pageIndex, pageSize)
+                : patientRepository.searchByName(namePattern, pageIndex, pageSize);
+
+        return patients.stream()
+                .map(p -> DTOMapper.toPatientDTO(p, eager))
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Create a new patient
-     */
-    public Uni<Patient> createPatient(PatientCreateDTO dto) {
-        if (dto.getFullName() == null || dto.getFullName().isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Full name is required"));
+
+    @Transactional
+    public PatientDTO createPatient(PatientCreateDTO dto) {
+        if (dto.fullName == null || dto.fullName.isEmpty()) {
+            throw new IllegalArgumentException("Full name is required");
         }
-        if (dto.getEmail() == null || dto.getEmail().isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Email is required"));
+        if (dto.email == null || dto.email.isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
         }
-        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Password is required"));
+        if (dto.password == null || dto.password.isEmpty()) {
+            throw new IllegalArgumentException("Password is required");
         }
 
-        return patientRepository.findByEmail(dto.getEmail())
-                .chain(existing -> {
-                    if (existing != null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("User with same e-mail already exists"));
-                    }
+        Patient existing = patientRepository.findByEmail(dto.email);
+        if (existing != null) {
+            throw new IllegalArgumentException("User with same e-mail already exists");
+        }
 
-                    Patient patient = new Patient();
-                    patient.setFullName(dto.getFullName());
-                    patient.setEmail(dto.getEmail());
-                    patient.setPassword(hashPassword(dto.getPassword()));
-                    patient.setUserType(UserType.Patient);
+        Patient patient = new Patient();
+        patient.setFullName(dto.fullName);
+        patient.setEmail(dto.email);
+        patient.setPassword(hashPassword(dto.password));
+        patient.setUserType(UserType.Patient);
 
-                    return Panache.withTransaction(() ->  patientRepository.persist(patient));
-                });
+        patientRepository.persist(patient);
+
+        return DTOMapper.toPatientDTO(patient, true);
     }
 
-    /**
-     * Update patient information
-     */
-    public Uni<Patient> updatePatient(UUID patientId, PatientUpdateDTO dto) {
-        return patientRepository.findById(patientId)
-                .chain(patient -> {
-                    if (patient == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Patient not found"));
-                    }
 
-                    if (dto.getFullName() != null && !dto.getFullName().isEmpty()) {
-                        patient.setFullName(dto.getFullName());
-                    }
-                    if (dto.getPassword() != null && !dto.getPassword().isEmpty()) {
-                        patient.setPassword(hashPassword(dto.getPassword()));
-                    }
+    @Transactional
+    public PatientDTO updatePatient(UUID patientId, PatientUpdateDTO dto) {
+        Patient patient = patientRepository.findById(patientId);
+        if (patient == null) {
+            throw new IllegalArgumentException("Patient not found");
+        }
 
-                    return patientRepository.persist(patient);
-                });
+        if (dto.fullName != null && !dto.fullName.isEmpty()) {
+            patient.setFullName(dto.fullName);
+        }
+        if (dto.password != null && !dto.password.isEmpty()) {
+            patient.setPassword(hashPassword(dto.password));
+        }
+
+        patientRepository.persist(patient);
+        return DTOMapper.toPatientDTO(patient, true);
     }
 
-    /**
-     * Delete a patient by ID
-     */
-    public Uni<Boolean> deletePatient(UUID patientId) {
+
+    @Transactional
+    public boolean deletePatient(UUID patientId) {
         return patientRepository.deleteById(patientId);
     }
 
-    /**
-     * Count total patients
-     */
-    public Uni<Long> countPatients() {
+
+    public long countPatients() {
         return patientRepository.count();
     }
 
+
     private String hashPassword(String password) {
-        return password; // TODO: Keycloak
+        return password; // TODO: implement proper password hashing
     }
 }

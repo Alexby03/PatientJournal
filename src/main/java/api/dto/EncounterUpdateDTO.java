@@ -12,10 +12,4 @@ public class EncounterUpdateDTO {
         this.description = description;
         this.encounterDate = encounterDate;
     }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public LocalDateTime getEncounterDate() { return encounterDate; }
-    public void setEncounterDate(LocalDateTime encounterDate) { this.encounterDate = encounterDate; }
 }

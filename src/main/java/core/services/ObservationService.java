@@ -1,18 +1,23 @@
 package core.services;
 
+import api.dto.ObservationCreateDTO;
+import api.dto.ObservationDTO;
+import api.dto.ObservationUpdateDTO;
+import core.mappers.DTOMapper;
 import data.entities.Observation;
 import data.entities.Patient;
 import data.entities.Practitioner;
 import data.repositories.ObservationRepository;
 import data.repositories.PatientRepository;
 import data.repositories.PractitionerRepository;
-import api.dto.ObservationCreateDTO;
-import api.dto.ObservationUpdateDTO;
-import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ObservationService {
@@ -29,116 +34,111 @@ public class ObservationService {
     /**
      * Get all observations for a patient
      */
-    public Uni<List<Observation>> getPatientObservations(UUID patientId) {
-        return patientRepository.findById(patientId)
-                .chain(patient -> {
-                    if (patient == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Patient not found"));
-                    }
-                    return observationRepository.findByPatientId(patientId);
-                });
+    public List<ObservationDTO> getPatientObservations(UUID patientId) {
+        Patient patient = patientRepository.findById(patientId);
+        if (patient == null) {
+            throw new IllegalArgumentException("Patient not found");
+        }
+        List<Observation> observations = observationRepository.findByPatientId(patientId);
+        return observations.stream()
+                .map(DTOMapper::toObservationDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Get observation by ID
      */
-    public Uni<Observation> getObservationById(UUID observationId) {
-        return observationRepository.findById(observationId);
-    }
-
-    /**
-     * Create a new observation from DTO
-     */
-    public Uni<Observation> createObservation(UUID patientId, UUID practitionerId, ObservationCreateDTO dto) {
-        if (dto.getDescription() == null || dto.getDescription().isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Description is required"));
+    public ObservationDTO getObservationById(UUID observationId) {
+        Observation observation = observationRepository.findById(observationId);
+        if (observation == null) {
+            throw new IllegalArgumentException("Observation not found");
         }
-        if (dto.getObservationDate() == null) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Observation date is required"));
-        }
-
-        return patientRepository.findById(patientId)
-                .chain(patient -> {
-                    if (patient == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Patient not found"));
-                    }
-
-                    return practitionerRepository.findById(practitionerId)
-                            .chain(practitioner -> {
-                                if (practitioner == null) {
-                                    return Uni.createFrom().failure(
-                                            new IllegalArgumentException("Practitioner not found"));
-                                }
-
-                                Observation observation = new Observation(
-                                        dto.getDescription(),
-                                        dto.getObservationDate(),
-                                        patient,
-                                        practitioner
-                                );
-
-                                return observationRepository.persist(observation);
-                            });
-                });
-    }
-
-    /**
-     * Update an observation from DTO
-     */
-    public Uni<Observation> updateObservation(UUID observationId, ObservationUpdateDTO dto) {
-        return observationRepository.findById(observationId)
-                .chain(observation -> {
-                    if (observation == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Observation not found"));
-                    }
-
-                    if (dto.getDescription() != null && !dto.getDescription().isEmpty()) {
-                        observation.setDescription(dto.getDescription());
-                    }
-                    if (dto.getObservationDate() != null) {
-                        observation.setObservationDate(dto.getObservationDate());
-                    }
-
-                    return observationRepository.persist(observation);
-                });
-    }
-
-    /**
-     * Delete an observation
-     */
-    public Uni<Boolean> deleteObservation(UUID observationId) {
-        return observationRepository.deleteById(observationId);
+        return DTOMapper.toObservationDTO(observation);
     }
 
     /**
      * Get most recent observation for a patient
      */
-    public Uni<Observation> getMostRecentObservation(UUID patientId) {
-        return observationRepository.findByPatientId(patientId)
-                .map(observations -> {
-                    if (observations == null || observations.isEmpty()) {
-                        return null;
-                    }
-                    return observations.stream()
-                            .max((o1, o2) -> o1.getObservationDate().compareTo(o2.getObservationDate()))
-                            .orElse(null);
-                });
+    public ObservationDTO getMostRecentObservation(UUID patientId) {
+        List<Observation> observations = observationRepository.findByPatientId(patientId);
+        if (observations == null || observations.isEmpty()) {
+            return null;
+        }
+        Observation latest = observations.stream()
+                .max(Comparator.comparing(Observation::getObservationDate))
+                .orElse(null);
+        return DTOMapper.toObservationDTO(latest);
     }
 
     /**
      * Get observations by practitioner
      */
-    public Uni<List<Observation>> getPractitionerObservations(UUID practitionerId) {
-        return observationRepository.findByPractitionerId(practitionerId);
+    public List<ObservationDTO> getPractitionerObservations(UUID practitionerId) {
+        List<Observation> observations = observationRepository.findByPractitionerId(practitionerId);
+        return observations.stream()
+                .map(DTOMapper::toObservationDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Count observations for a patient
      */
-    public Uni<Long> countPatientObservations(UUID patientId) {
+    public long countPatientObservations(UUID patientId) {
         return observationRepository.countByPatient(patientId);
+    }
+
+    @Transactional
+    public ObservationDTO createObservation(UUID patientId, UUID practitionerId, ObservationCreateDTO dto) {
+        if (dto.description == null || dto.description.isEmpty()) {
+            throw new IllegalArgumentException("Description is required");
+        }
+        if (dto.observationDate == null) {
+            throw new IllegalArgumentException("Observation date is required");
+        }
+
+        Patient patient = patientRepository.findById(patientId);
+        if (patient == null) {
+            throw new IllegalArgumentException("Patient not found");
+        }
+
+        Practitioner practitioner = practitionerRepository.findById(practitionerId);
+        if (practitioner == null) {
+            throw new IllegalArgumentException("Practitioner not found");
+        }
+
+        Observation observation = new Observation(
+                dto.description,
+                dto.observationDate,
+                patient,
+                practitioner
+        );
+
+        observationRepository.persist(observation);
+        return DTOMapper.toObservationDTO(observation);
+    }
+
+
+    @Transactional
+    public ObservationDTO updateObservation(UUID observationId, ObservationUpdateDTO dto) {
+        Observation observation = observationRepository.findById(observationId);
+        if (observation == null) {
+            throw new IllegalArgumentException("Observation not found");
+        }
+
+        if (dto.description != null && !dto.description.isEmpty()) {
+            observation.setDescription(dto.description);
+        }
+        if (dto.observationDate != null) {
+            observation.setObservationDate(dto.observationDate);
+        }
+
+        observationRepository.persist(observation);
+        return DTOMapper.toObservationDTO(observation);
+    }
+
+
+    @Transactional
+    public boolean deleteObservation(UUID observationId) {
+        return observationRepository.deleteById(observationId);
     }
 }

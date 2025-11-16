@@ -10,8 +10,8 @@ import java.util.List;
 @DiscriminatorValue("PRACTITIONER")
 public class Practitioner extends User {
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "organization_id", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "organization_id")
     private Organization organization;
 
     @JsonIgnore
@@ -89,4 +89,15 @@ public class Practitioner extends User {
         }
     }
 
+    public List<Condition> getConditions() {
+        return conditions;
+    }
+
+    public List<Encounter> getEncounters() {
+        return encounters;
+    }
+
+    public List<Observation> getObservations() {
+        return observations;
+    }
 }

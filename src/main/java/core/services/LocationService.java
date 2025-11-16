@@ -1,15 +1,19 @@
 package core.services;
 
-import data.entities.Location;
-import data.repositories.LocationRepository;
+import api.dto.LocationDTO;
 import api.dto.LocationCreateDTO;
 import api.dto.LocationUpdateDTO;
+import core.mappers.DTOMapper;
+import data.entities.Location;
+import data.repositories.LocationRepository;
 import core.enums.LocationType;
-import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class LocationService {
@@ -17,62 +21,78 @@ public class LocationService {
     @Inject
     LocationRepository locationRepository;
 
+
     /**
      * Get all locations
      */
-    public Uni<List<Location>> getAllLocations() {
-        return locationRepository.findAllLocations();
+    public List<LocationDTO> getAllLocations() {
+        List<Location> locations = locationRepository.findAllLocations();
+        return locations.stream()
+                .map(DTOMapper::toLocationDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Get location by ID
      */
-    public Uni<Location> getLocationById(UUID locationId) {
-        return locationRepository.findById(locationId);
-    }
-
-    /**
-     * Create a new location from DTO
-     */
-    public Uni<Location> createLocation(LocationCreateDTO dto) {
-        if (dto.getLocationType() == null) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Location type is required"));
+    public LocationDTO getLocationById(UUID locationId) {
+        Location location = locationRepository.findById(locationId);
+        if (location == null) {
+            throw new IllegalArgumentException("Location not found");
         }
-
-        Location location = new Location(dto.getLocationType());
-        return locationRepository.persist(location);
-    }
-
-    /**
-     * Update location information from DTO
-     */
-    public Uni<Location> updateLocation(UUID locationId, LocationUpdateDTO dto) {
-        return locationRepository.findById(locationId)
-                .chain(location -> {
-                    if (location == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Location not found"));
-                    }
-
-                    if (dto.getLocationType() != null) {
-                        location.setLocationType(dto.getLocationType());
-                    }
-
-                    return locationRepository.persist(location);
-                });
+        return DTOMapper.toLocationDTO(location);
     }
 
     /**
      * Get locations by type
      */
-    public Uni<List<Location>> getLocationsByType(LocationType locationType) {
-        return locationRepository.findByLocationType(locationType);
+    public List<LocationDTO> getLocationsByType(LocationType locationType) {
+        List<Location> locations = locationRepository.findByLocationType(locationType);
+        return locations.stream()
+                .map(DTOMapper::toLocationDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Count total locations
      */
-    public Uni<Long> countLocations() {
+    public long countLocations() {
         return locationRepository.countTotalLocations();
+    }
+
+
+    @Transactional
+    public LocationDTO createLocation(LocationCreateDTO dto) {
+        if (dto.locationType == null) {
+            throw new IllegalArgumentException("Location type is required");
+        }
+
+        Location location = new Location();
+        location.setLocationType(dto.locationType);
+        locationRepository.persist(location);
+
+        return DTOMapper.toLocationDTO(location);
+    }
+
+
+    @Transactional
+    public LocationDTO updateLocation(UUID locationId, LocationUpdateDTO dto) {
+        Location location = locationRepository.findById(locationId);
+        if (location == null) {
+            throw new IllegalArgumentException("Location not found");
+        }
+
+        if (dto.locationType != null) {
+            location.setLocationType(dto.locationType);
+        }
+
+        locationRepository.persist(location);
+        return DTOMapper.toLocationDTO(location);
+    }
+
+
+    @Transactional
+    public boolean deleteLocation(UUID locationId) {
+        return locationRepository.deleteById(locationId);
     }
 }

@@ -1,16 +1,20 @@
 package api.resources;
 
-import data.entities.User;
-import core.services.UserService;
 import api.dto.UserCreateDTO;
+import api.dto.UserDTO;
+import api.dto.UserLoginDTO;
 import api.dto.UserUpdateDTO;
-import io.smallrye.mutiny.Uni;
+import core.services.UserService;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-@Path("/api/users")
+import java.util.List;
+import java.util.UUID;
+
+@Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class UserResource {
@@ -18,76 +22,91 @@ public class UserResource {
     @Inject
     UserService userService;
 
-    /**
-     * GET /api/users - Get all users with pagination
-     */
+    // =======================
+    // GET Endpoints
+    // =======================
+
+    /** Get all users with pagination */
     @GET
-    public Uni<Response> getAllUsers(
-            @QueryParam("pageIndex") @DefaultValue("0") int pageIndex,
-            @QueryParam("pageSize") @DefaultValue("10") int pageSize) {
-        return userService.getAllUsers(pageIndex, pageSize)
-                .map(users -> Response.ok(users).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                                .entity("Error fetching users")
-                                .build());
+    public List<UserDTO> getAllUsers(@QueryParam("pageIndex") @DefaultValue("0") int pageIndex,
+                                     @QueryParam("pageSize") @DefaultValue("10") int pageSize) {
+        return userService.getAllUsers(pageIndex, pageSize);
     }
 
-    /**
-     * GET /api/users/{userId}
-     */
+    /** Get user by ID */
     @GET
     @Path("/{userId}")
-    public Uni<Response> getUserById(@PathParam("userId") String userId) {
-        return userService.getUserById(java.util.UUID.fromString(userId))
-                .map(user -> {
-                    if (user == null) {
-                        return Response.status(Response.Status.NOT_FOUND).build();
-                    }
-                    return Response.ok(user).build();
-                })
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public UserDTO getUserById(@PathParam("userId") UUID userId) {
+        UserDTO user = userService.getUserById(userId);
+        if (user == null) {
+            throw new NotFoundException("User not found");
+        }
+        return user;
     }
 
-    /**
-     * GET /api/users/email/{email}
-     */
+    /** Get user by email */
     @GET
     @Path("/email/{email}")
-    public Uni<Response> getUserByEmail(@PathParam("email") String email) {
-        return userService.getUserByEmail(email)
-                .map(user -> {
-                    if (user == null) {
-                        return Response.status(Response.Status.NOT_FOUND).build();
-                    }
-                    return Response.ok(user).build();
-                })
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public UserDTO getUserByEmail(@PathParam("email") String email) {
+        UserDTO user = userService.getUserByEmail(email);
+        if (user == null) {
+            throw new NotFoundException("User not found");
+        }
+        return user;
     }
 
-    /**
-     * DELETE /api/users/{userId}
-     */
-    @DELETE
-    @Path("/{userId}")
-    public Uni<Response> deleteUser(@PathParam("userId") String userId) {
-        return userService.deleteUser(java.util.UUID.fromString(userId))
-                .map(deleted -> Response.ok().build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
-    }
-
-    /**
-     * GET /api/users/count
-     */
+    /** Count total users */
     @GET
     @Path("/count")
-    public Uni<Response> countUsers() {
-        return userService.countUsers()
-                .map(count -> Response.ok(count).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public long countUsers() {
+        return userService.countUsers();
+    }
+
+    // =======================
+    // POST Endpoint
+    // =======================
+
+    /** Create a new user */
+    @POST
+    @Transactional
+    public UserDTO createUser(UserCreateDTO dto) {
+        return userService.createUser(dto);
+    }
+
+    /** User login */
+    @POST
+    @Path("/login")
+    public UserLoginDTO login(UserLoginRequest req) {
+        return userService.login(req.email, req.password);
+    }
+
+    public static class UserLoginRequest {
+        public String email;
+        public String password;
+    }
+
+    // =======================
+    // PUT Endpoint
+    // =======================
+
+    /** Update user details */
+    @PUT
+    @Path("/{userId}")
+    @Transactional
+    public UserDTO updateUser(@PathParam("userId") UUID userId, UserUpdateDTO dto) {
+        return userService.updateUser(userId, dto);
+    }
+
+    // =======================
+    // DELETE Endpoint
+    // =======================
+
+    /** Delete a user */
+    @DELETE
+    @Path("/{userId}")
+    @Transactional
+    public Response deleteUser(@PathParam("userId") UUID userId) {
+        boolean deleted = userService.deleteUser(userId);
+        return deleted ? Response.noContent().build() : Response.status(Response.Status.NOT_FOUND).build();
     }
 }

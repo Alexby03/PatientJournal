@@ -14,13 +14,4 @@ public class MessageCreateDTO {
         this.senderId = senderId;
         this.message = message;
     }
-
-    public UUID getSessionId() { return sessionId; }
-    public void setSessionId(UUID sessionId) { this.sessionId = sessionId; }
-
-    public UUID getSenderId() { return senderId; }
-    public void setSenderId(UUID senderId) { this.senderId = senderId; }
-
-    public String getMessage() { return message; }
-    public void setMessage(String message) { this.message = message; }
 }

@@ -1,16 +1,20 @@
 package api.resources;
 
+import api.dto.LocationCreateDTO;
 import api.dto.LocationDTO;
-import core.mappers.LocationMapper;
-import core.services.LocationService;
+import api.dto.LocationUpdateDTO;
 import core.enums.LocationType;
-import io.smallrye.mutiny.Uni;
+import core.services.LocationService;
+
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.List;
+import java.util.UUID;
 
-@Path("/api/locations")
+@Path("/locations")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class LocationResource {
@@ -18,48 +22,77 @@ public class LocationResource {
     @Inject
     LocationService locationService;
 
-    /**
-     * GET /api/locations
-     */
+    // =======================
+    // GET Endpoints
+    // =======================
+
+    /** Get all locations */
     @GET
-    public Uni<Response> getAllLocations() {
-        return locationService.getAllLocations()
-                .map(locations -> Response.ok(
-                        locations.stream().map(LocationMapper::toDTO).toList()
-                ).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public List<LocationDTO> getAllLocations() {
+        return locationService.getAllLocations();
     }
 
-    /**
-     * GET /api/locations/{locationId}
-     */
+    /** Get location by ID */
     @GET
     @Path("/{locationId}")
-    public Uni<Response> getLocationById(@PathParam("locationId") String locationId) {
-        return locationService.getLocationById(java.util.UUID.fromString(locationId))
-                .map(location -> {
-                    if (location == null) {
-                        return Response.status(Response.Status.NOT_FOUND).build();
-                    }
-                    return Response.ok(LocationMapper.toDTO(location)).build();
-                })
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+    public LocationDTO getLocationById(@PathParam("locationId") UUID locationId) {
+        return locationService.getLocationById(locationId);
     }
 
-    /**
-     * GET /api/locations/type/{type}
-     */
+    /** Get locations by type */
     @GET
     @Path("/type/{type}")
-    public Uni<Response> getLocationsByType(@PathParam("type") String type) {
-        return locationService.getLocationsByType(LocationType.valueOf(type))
-                .map(locations -> Response.ok(
-                        locations.stream().map(LocationMapper::toDTO).toList()
-                ).build())
-                .onFailure().recoverWithItem(err ->
-                        Response.status(Response.Status.BAD_REQUEST)
-                                .entity(err.getMessage()).build());
+    public List<LocationDTO> getLocationsByType(@PathParam("type") LocationType type) {
+        return locationService.getLocationsByType(type);
+    }
+
+    /** Count total locations */
+    @GET
+    @Path("/count")
+    public long countLocations() {
+        return locationService.countLocations();
+    }
+
+    // =======================
+    // POST Endpoints
+    // =======================
+
+    /** Create a new location */
+    @POST
+    @Transactional
+    public LocationDTO createLocation(LocationCreateDTO dto) {
+        return locationService.createLocation(dto);
+    }
+
+    // =======================
+    // PUT Endpoints
+    // =======================
+
+    /** Update existing location */
+    @PUT
+    @Path("/{locationId}")
+    @Transactional
+    public LocationDTO updateLocation(@PathParam("locationId") UUID locationId,
+                                      LocationUpdateDTO dto) {
+        return locationService.updateLocation(locationId, dto);
+    }
+
+    // =======================
+    // DELETE Endpoints
+    // =======================
+
+    /** Delete location */
+    @DELETE
+    @Path("/{locationId}")
+    @Transactional
+    public Response deleteLocation(@PathParam("locationId") UUID locationId) {
+        boolean deleted = locationService.deleteLocation(locationId);
+        if (deleted) {
+            return Response.noContent().build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Location not found")
+                    .build();
+        }
     }
 }

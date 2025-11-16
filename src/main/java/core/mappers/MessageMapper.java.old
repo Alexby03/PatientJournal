@@ -10,8 +10,8 @@ public class MessageMapper {
 
         return new MessageDTO(
                 message.getMessageId(),
-                message.getSessionId() != null ? message.getSessionId().getSessionId() : null,
-                message.getSenderId() != null ? message.getSenderId().getId() : null,
+                message.getSessionId(),
+                message.getSenderId(),
                 message.getMessage(),
                 message.getDateTime()
         );

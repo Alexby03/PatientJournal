@@ -10,7 +10,4 @@ public class LocationUpdateDTO {
     public LocationUpdateDTO(LocationType locationType) {
         this.locationType = locationType;
     }
-
-    public LocationType getLocationType() { return locationType; }
-    public void setLocationType(LocationType locationType) { this.locationType = locationType; }
 }

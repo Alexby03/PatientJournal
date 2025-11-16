@@ -12,10 +12,4 @@ public class ObservationUpdateDTO {
         this.description = description;
         this.observationDate = observationDate;
     }
-
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
-    public LocalDateTime getObservationDate() { return observationDate; }
-    public void setObservationDate(LocalDateTime observationDate) { this.observationDate = observationDate; }
 }

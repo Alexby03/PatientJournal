@@ -1,14 +1,20 @@
 package core.services;
 
+import api.dto.UserCreateDTO;
+import api.dto.UserDTO;
+import api.dto.UserLoginDTO;
+import api.dto.UserUpdateDTO;
+import core.enums.UserType;
+import data.entities.Patient;
 import data.entities.User;
 import data.repositories.UserRepository;
-import api.dto.UserCreateDTO;
-import api.dto.UserUpdateDTO;
-import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class UserService {
@@ -16,46 +22,126 @@ public class UserService {
     @Inject
     UserRepository userRepository;
 
-    /**
-     * Get all users with pagination
-     */
-    public Uni<List<User>> getAllUsers(int pageIndex, int pageSize) {
-        return userRepository.listAllUsers(pageIndex, pageSize);
+    public List<UserDTO> getAllUsers(int pageIndex, int pageSize) {
+        List<User> users = userRepository.listAllUsers(pageIndex, pageSize);
+        return users.stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Get a single user by ID
-     */
-    public Uni<User> getUserById(UUID userId) {
-        return userRepository.findById(userId);
+    public UserDTO getUserById(UUID userId) {
+        User user = userRepository.findById(userId);
+        if (user == null) return null;
+        return toDTO(user);
     }
 
-    /**
-     * Get user by email
-     */
-    public Uni<User> getUserByEmail(String email) {
+    public UserDTO getUserByEmail(String email) {
         if (email == null || email.isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Email cannot be empty"));
+            throw new IllegalArgumentException("Email cannot be empty");
         }
-        return userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email);
+        if (user == null) return null;
+        return toDTO(user);
     }
 
-    /**
-     * Delete a user
-     */
-    public Uni<Boolean> deleteUser(UUID userId) {
-        return userRepository.deleteById(userId);
-    }
-
-    /**
-     * Count total users
-     */
-    public Uni<Long> countUsers() {
+    public long countUsers() {
         return userRepository.countTotalUsers();
     }
 
-    // TODO: implement proper hashing
+
+    @Transactional
+    public UserDTO createUser(UserCreateDTO dto) {
+        validateCreateDTO(dto);
+
+        User user = new Patient(); //Doctors och OtherStaff kan bara få sina konton tilldelade från HR
+        user.setFullName(dto.fullName);
+        user.setEmail(dto.email);
+        user.setPassword(hashPassword(dto.password));
+        user.setUserType(dto.userType);
+
+        userRepository.persist(user);
+        return toDTO(user);
+    }
+
+    @Transactional
+    public UserDTO updateUser(UUID userId, UserUpdateDTO dto) {
+        User user = userRepository.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        if (dto.fullName != null) user.setFullName(dto.fullName);
+        //if (dto.email != null) user.setEmail(dto.email); //TODO: Keycloak authentication
+        if (dto.password != null) user.setPassword(hashPassword(dto.password));
+
+        userRepository.persist(user);
+        return toDTO(user);
+    }
+
+    // -------------------------------
+    // DELETE
+    // -------------------------------
+
+    @Transactional
+    public boolean deleteUser(UUID userId) {
+        return userRepository.deleteById(userId);
+    }
+
+    // -------------------------------
+    // LOGIN
+    // -------------------------------
+
+    public UserLoginDTO login(String email, String password) {
+        if (email == null || password == null) {
+            throw new IllegalArgumentException("Email and password cannot be null");
+        }
+
+        User user = userRepository.findByEmail(email);
+        if (user == null || !user.getPassword().equals(hashPassword(password))) {
+            throw new IllegalArgumentException("Invalid credentials");
+        }
+
+        // Bestäm home page baserat på userType
+        String homePage;
+        switch (user.getUserType()) {
+            case Patient -> homePage = "/patient/home";
+            case OtherStaff -> homePage = "/practitioner/home";
+            case Doctor -> homePage = "/doctor/home";
+            default -> homePage = "/login";
+        }
+
+        return new UserLoginDTO(user.getId(), user.getUserType(), homePage);
+    }
+
+    // -------------------------------
+    // UTILS
+    // -------------------------------
+
+    private void validateCreateDTO(UserCreateDTO dto) {
+        if (dto.fullName == null || dto.fullName.isEmpty()) {
+            throw new IllegalArgumentException("Full name is required");
+        }
+        if (dto.email == null || dto.email.isEmpty()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (dto.password == null || dto.password.isEmpty()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+        if (dto.userType == null) {
+            throw new IllegalArgumentException("User type is required");
+        }
+    }
+
     private String hashPassword(String password) {
-        return password; // TODO: Keycloadk
+        return password; // TODO: implement real hashing / integrate Keycloak
+    }
+
+    private UserDTO toDTO(User user) {
+        return new UserDTO(
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getUserType()
+        );
     }
 }

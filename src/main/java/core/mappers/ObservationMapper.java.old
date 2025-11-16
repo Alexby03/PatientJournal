@@ -1,10 +1,13 @@
 package core.mappers;
 
 import api.dto.ObservationDTO;
+import core.enums.OrganizationType;
 import data.entities.Observation;
 import data.entities.Patient;
 import data.entities.Practitioner;
 import data.entities.Organization;
+
+import java.util.UUID;
 
 public class ObservationMapper {
 
@@ -13,19 +16,16 @@ public class ObservationMapper {
 
         Patient patient = observation.getPatient();
         Practitioner practitioner = observation.getPractitioner();
-        Organization organization = (practitioner != null) ? practitioner.getOrganization() : null;
 
-        String patientName = (patient != null) ? patient.getFullName() : null;
-        String practitionerName = (practitioner != null) ? practitioner.getFullName() : null;
-        String organizationType = (organization != null) ? organization.getOrganizationType().name() : null;
+        UUID patientId = (patient != null) ? patient.getId() : null;
+        UUID practitionerId = (practitioner != null) ? practitioner.getId() : null;
 
         return new ObservationDTO(
                 observation.getObservationId(),
                 observation.getDescription(),
                 observation.getObservationDate(),
-                patientName,
-                practitionerName,
-                organizationType
+                patientId,
+                practitionerId
         );
     }
 }

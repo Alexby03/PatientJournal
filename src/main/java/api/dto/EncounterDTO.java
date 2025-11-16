@@ -6,18 +6,18 @@ import java.util.UUID;
 public class EncounterDTO {
     public UUID encounterId;
     public LocalDateTime encounterDate;
-    public String notes;
-    public String patientName;
-    public String practitionerName;
-    public String organizationName;
+    public String description; // renamed from notes to match entity
+    public UUID patientId;
+    public UUID practitionerId;
 
-    public EncounterDTO(UUID encounterId, LocalDateTime encounterDate, String notes,
-                        String patientName, String practitionerName, String organizationName) {
+    public EncounterDTO() {}
+
+    public EncounterDTO(UUID encounterId, LocalDateTime encounterDate, String description,
+                        UUID patientId, UUID practitionerId) {
         this.encounterId = encounterId;
         this.encounterDate = encounterDate;
-        this.notes = notes;
-        this.patientName = patientName;
-        this.practitionerName = practitionerName;
-        this.organizationName = organizationName;
+        this.description = description;
+        this.patientId = patientId;
+        this.practitionerId = practitionerId;
     }
 }

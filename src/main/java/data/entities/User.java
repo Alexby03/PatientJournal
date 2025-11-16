@@ -1,7 +1,7 @@
 package data.entities;
 
 import core.enums.OrganizationType;
-import io.quarkus.hibernate.reactive.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import core.enums.UserType;
 
@@ -15,10 +15,10 @@ import java.util.UUID;
 public abstract class User extends PanacheEntityBase {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "full_name", nullable = false)
     private String fullName;
 
     @Column(nullable = false, unique = true)
@@ -28,7 +28,7 @@ public abstract class User extends PanacheEntityBase {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "user_type", nullable = false)
     private UserType userType;
 
     public User() {}

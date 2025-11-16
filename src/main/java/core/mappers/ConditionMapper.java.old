@@ -5,6 +5,8 @@ import data.entities.Condition;
 import data.entities.Patient;
 import data.entities.Practitioner;
 
+import java.util.UUID;
+
 public class ConditionMapper {
 
     public static ConditionDTO toDTO(Condition condition) {
@@ -13,8 +15,8 @@ public class ConditionMapper {
         Patient patient = condition.getPatient();
         Practitioner practitioner = condition.getPractitioner();
 
-        String patientName = (patient != null) ? patient.getFullName() : null;
-        String practitionerName = (practitioner != null) ? practitioner.getFullName() : null;
+        UUID patientId = (patient != null) ? patient.getId() : null;
+        UUID practitionerId = (practitioner != null) ? practitioner.getId() : null;
 
         return new ConditionDTO(
                 condition.getConditionId(),
@@ -22,8 +24,8 @@ public class ConditionMapper {
                 condition.getConditionType(),
                 condition.getSeverityLevel(),
                 condition.getDiagnosedDate(),
-                patientName,
-                practitionerName
+                patientId,
+                practitionerId
         );
     }
 }

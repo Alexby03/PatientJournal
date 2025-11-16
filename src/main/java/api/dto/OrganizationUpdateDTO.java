@@ -13,10 +13,4 @@ public class OrganizationUpdateDTO {
         this.organizationType = organizationType;
         this.locationId = locationId;
     }
-
-    public OrganizationType getOrganizationType() { return organizationType; }
-    public void setOrganizationType(OrganizationType organizationType) { this.organizationType = organizationType; }
-
-    public UUID getLocationId() { return locationId; }
-    public void setLocationId(UUID locationId) { this.locationId = locationId; }
 }

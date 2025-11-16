@@ -1,19 +1,24 @@
 package core.services;
 
+import api.dto.ConditionCreateDTO;
+import api.dto.ConditionDTO;
+import api.dto.ConditionUpdateDTO;
+import core.mappers.DTOMapper;
 import data.entities.Condition;
 import data.entities.Patient;
 import data.entities.Practitioner;
 import data.repositories.ConditionRepository;
 import data.repositories.PatientRepository;
 import data.repositories.PractitionerRepository;
-import api.dto.ConditionCreateDTO;
-import api.dto.ConditionUpdateDTO;
 import core.enums.ConditionType;
-import io.smallrye.mutiny.Uni;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ConditionService {
@@ -27,128 +32,120 @@ public class ConditionService {
     @Inject
     PractitionerRepository practitionerRepository;
 
-    /**
-     * Get all conditions for a patient
-     */
-    public Uni<List<Condition>> getPatientConditions(UUID patientId) {
-        return patientRepository.findById(patientId)
-                .chain(patient -> {
-                    if (patient == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Patient not found"));
-                    }
-                    return conditionRepository.findByPatientId(patientId);
-                });
-    }
-
-    /**
-     * Get condition by ID
-     */
-    public Uni<Condition> getConditionById(UUID conditionId) {
-        return conditionRepository.findById(conditionId);
-    }
-
-    /**
-     * Create a new condition from DTO
-     */
-    public Uni<Condition> createCondition(UUID patientId, UUID practitionerId, ConditionCreateDTO dto) {
-        // Validate DTO
-        if (dto.getConditionName() == null || dto.getConditionName().isEmpty()) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Condition name is required"));
-        }
-        if (dto.getSeverityLevel() < 1 || dto.getSeverityLevel() > 10) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Severity level must be between 1 and 10"));
-        }
-        if (dto.getConditionType() == null) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Condition type is required"));
-        }
-        if (dto.getDiagnosedDate() == null) {
-            return Uni.createFrom().failure(new IllegalArgumentException("Diagnosed date is required"));
+    public List<ConditionDTO> getPatientConditions(UUID patientId, boolean eager) {
+        Patient patient = patientRepository.findById(patientId);
+        if (patient == null) {
+            throw new IllegalArgumentException("Patient not found");
         }
 
-        // Validate patient and practitioner exist
-        return patientRepository.findById(patientId)
-                .chain(patient -> {
-                    if (patient == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Patient not found"));
-                    }
+        List<Condition> conditions;
+        if (eager) {
+            Patient patientWithRelations = patientRepository.findByIdWithRelations(patientId);
+            conditions = patientWithRelations.getConditions();
+        } else {
+            conditions = conditionRepository.findByPatientId(patientId);
+        }
 
-                    return practitionerRepository.findById(practitionerId)
-                            .chain(practitioner -> {
-                                if (practitioner == null) {
-                                    return Uni.createFrom().failure(
-                                            new IllegalArgumentException("Practitioner not found"));
-                                }
-
-                                // Create condition entity from DTO
-                                Condition condition = new Condition(
-                                        dto.getConditionName(),
-                                        dto.getSeverityLevel(),
-                                        dto.getConditionType(),
-                                        dto.getDiagnosedDate(),
-                                        patient,
-                                        practitioner
-                                );
-
-                                return conditionRepository.persist(condition);
-                            });
-                });
+        return conditions.stream()
+                .map(DTOMapper::toConditionDTO)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Update a condition from DTO
-     */
-    public Uni<Condition> updateCondition(UUID conditionId, ConditionUpdateDTO dto) {
-        return conditionRepository.findById(conditionId)
-                .chain(condition -> {
-                    if (condition == null) {
-                        return Uni.createFrom().failure(
-                                new IllegalArgumentException("Condition not found"));
-                    }
-
-                    if (dto.getConditionName() != null && !dto.getConditionName().isEmpty()) {
-                        condition.setConditionName(dto.getConditionName());
-                    }
-                    if (dto.getSeverityLevel() > 0) {
-                        condition.setSeverityLevel(dto.getSeverityLevel());
-                    }
-                    if (dto.getConditionType() != null) {
-                        condition.setConditionType(dto.getConditionType());
-                    }
-                    if (dto.getDiagnosedDate() != null) {
-                        condition.setDiagnosedDate(dto.getDiagnosedDate());
-                    }
-
-                    return conditionRepository.persist(condition);
-                });
+    public ConditionDTO getConditionById(UUID conditionId) {
+        Condition condition = conditionRepository.findById(conditionId);
+        if (condition == null) {
+            throw new IllegalArgumentException("Condition not found");
+        }
+        return DTOMapper.toConditionDTO(condition);
     }
 
-    /**
-     * Delete a condition
-     */
-    public Uni<Boolean> deleteCondition(UUID conditionId) {
+    @Transactional
+    public ConditionDTO createCondition(UUID patientId, UUID practitionerId, ConditionCreateDTO dto) {
+        validateConditionDTO(dto);
+
+        Patient patient = patientRepository.findById(patientId);
+        if (patient == null) {
+            throw new IllegalArgumentException("Patient not found");
+        }
+
+        Practitioner practitioner = practitionerRepository.findById(practitionerId);
+        if (practitioner == null) {
+            throw new IllegalArgumentException("Practitioner not found");
+        }
+
+        Condition condition = new Condition(
+                dto.conditionName,
+                dto.severityLevel,
+                dto.conditionType,
+                dto.diagnosedDate,
+                patient,
+                practitioner
+        );
+
+        conditionRepository.persist(condition);
+        return DTOMapper.toConditionDTO(condition);
+    }
+
+    @Transactional
+    public ConditionDTO updateCondition(UUID conditionId, ConditionUpdateDTO dto) {
+        Condition condition = conditionRepository.findById(conditionId);
+        if (condition == null) {
+            throw new IllegalArgumentException("Condition not found");
+        }
+
+        if (dto.conditionName != null && !dto.conditionName.isEmpty()) {
+            condition.setConditionName(dto.conditionName);
+        }
+        if (dto.severityLevel > 0) {
+            condition.setSeverityLevel(dto.severityLevel);
+        }
+        if (dto.conditionType != null) {
+            condition.setConditionType(dto.conditionType);
+        }
+        if (dto.diagnosedDate != null) {
+            condition.setDiagnosedDate(dto.diagnosedDate);
+        }
+
+        conditionRepository.persist(condition);
+
+        return DTOMapper.toConditionDTO(condition);
+    }
+
+    @Transactional
+    public boolean deleteCondition(UUID conditionId) {
         return conditionRepository.deleteById(conditionId);
     }
 
-    /**
-     * Get high-severity conditions
-     */
-    public Uni<List<Condition>> getHighSeverityConditions() {
-        return conditionRepository.findHighSeverityConditions();
+    public List<ConditionDTO> getHighSeverityConditions() {
+        List<Condition> conditions = conditionRepository.findHighSeverityConditions();
+        return conditions.stream()
+                .map(DTOMapper::toConditionDTO)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Get conditions by type
-     */
-    public Uni<List<Condition>> getConditionsByType(ConditionType conditionType) {
-        return conditionRepository.findByConditionType(conditionType);
+    public List<ConditionDTO> getConditionsByType(ConditionType conditionType) {
+        List<Condition> conditions = conditionRepository.findByConditionType(conditionType);
+        return conditions.stream()
+                .map(DTOMapper::toConditionDTO)
+                .collect(Collectors.toList());
     }
 
-    /**
-     * Count conditions for a patient
-     */
-    public Uni<Long> countPatientConditions(UUID patientId) {
+    public long countPatientConditions(UUID patientId) {
         return conditionRepository.countByPatient(patientId);
+    }
+
+    private void validateConditionDTO(ConditionCreateDTO dto) {
+        if (dto.conditionName == null || dto.conditionName.isEmpty()) {
+            throw new IllegalArgumentException("Condition name is required");
+        }
+        if (dto.severityLevel < 1 || dto.severityLevel > 10) {
+            throw new IllegalArgumentException("Severity level must be between 1 and 10");
+        }
+        if (dto.conditionType == null) {
+            throw new IllegalArgumentException("Condition type is required");
+        }
+        if (dto.diagnosedDate == null) {
+            throw new IllegalArgumentException("Diagnosed date is required");
+        }
     }
 }
