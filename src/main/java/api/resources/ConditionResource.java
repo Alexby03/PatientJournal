@@ -36,6 +36,15 @@ public class ConditionResource {
         return conditionService.getPatientConditions(patientId, eager);
     }
 
+    /** Get all conditions a practitioner assigned (optionally eager load) */
+    @GET
+    @Path("/practitioner/{practitionerId}")
+    public List<ConditionDTO> getPractitionerConditions(
+            @PathParam("practitionerId") UUID practitionerId
+    ) {
+        return conditionService.getPractitionerConditions(practitionerId);
+    }
+
     /** Get condition by ID */
     @GET
     @Path("/{conditionId}")

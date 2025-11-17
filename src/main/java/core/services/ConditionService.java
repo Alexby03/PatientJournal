@@ -51,6 +51,18 @@ public class ConditionService {
                 .collect(Collectors.toList());
     }
 
+    public List<ConditionDTO> getPractitionerConditions(UUID practitionerId) {
+        Practitioner practitioner = practitionerRepository.findById(practitionerId);
+        if (practitioner == null) {
+            throw new IllegalArgumentException("Practitioner not found");
+        }
+        List<Condition> conditions = conditionRepository.findByPractitionerId(practitionerId);
+
+        return conditions.stream()
+                .map(DTOMapper::toConditionDTO)
+                .collect(Collectors.toList());
+    }
+
     public ConditionDTO getConditionById(UUID conditionId) {
         Condition condition = conditionRepository.findById(conditionId);
         if (condition == null) {
