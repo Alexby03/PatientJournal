@@ -78,18 +78,10 @@ public class UserService {
         return toDTO(user);
     }
 
-    // -------------------------------
-    // DELETE
-    // -------------------------------
-
     @Transactional
     public boolean deleteUser(UUID userId) {
         return userRepository.deleteById(userId);
     }
-
-    // -------------------------------
-    // LOGIN
-    // -------------------------------
 
     public UserDTO login(String email, String password) {
         if (email == null || password == null) {
@@ -103,10 +95,6 @@ public class UserService {
 
         return new UserDTO(user.getId(), user.getFullName(), user.getEmail(), user.getUserType());
     }
-
-    // -------------------------------
-    // UTILS
-    // -------------------------------
 
     private void validateCreateDTO(UserCreateDTO dto) {
         if (dto.fullName == null || dto.fullName.isEmpty()) {

@@ -22,7 +22,7 @@ public class OrganizationResource {
     OrganizationService organizationService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all organizations with pagination */
@@ -54,7 +54,7 @@ public class OrganizationResource {
     }
 
     // =======================
-    // POST Endpoint
+    // POST
     // =======================
 
     /** Create a new organization */
@@ -65,7 +65,7 @@ public class OrganizationResource {
     }
 
     // =======================
-    // PUT Endpoint
+    // PUT
     // =======================
 
     /** Update an existing organization */

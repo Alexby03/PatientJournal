@@ -31,9 +31,6 @@ public class ObservationService {
     @Inject
     PractitionerRepository practitionerRepository;
 
-    /**
-     * Get all observations for a patient
-     */
     public List<ObservationDTO> getPatientObservations(UUID patientId) {
         Patient patient = patientRepository.findById(patientId);
         if (patient == null) {
@@ -45,9 +42,6 @@ public class ObservationService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get observation by ID
-     */
     public ObservationDTO getObservationById(UUID observationId) {
         Observation observation = observationRepository.findById(observationId);
         if (observation == null) {
@@ -56,9 +50,6 @@ public class ObservationService {
         return DTOMapper.toObservationDTO(observation);
     }
 
-    /**
-     * Get most recent observation for a patient
-     */
     public ObservationDTO getMostRecentObservation(UUID patientId) {
         List<Observation> observations = observationRepository.findByPatientId(patientId);
         if (observations == null || observations.isEmpty()) {
@@ -70,9 +61,6 @@ public class ObservationService {
         return DTOMapper.toObservationDTO(latest);
     }
 
-    /**
-     * Get observations by practitioner
-     */
     public List<ObservationDTO> getPractitionerObservations(UUID practitionerId) {
         List<Observation> observations = observationRepository.findByPractitionerId(practitionerId);
         return observations.stream()
@@ -80,9 +68,6 @@ public class ObservationService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Count observations for a patient
-     */
     public long countPatientObservations(UUID patientId) {
         return observationRepository.countByPatient(patientId);
     }

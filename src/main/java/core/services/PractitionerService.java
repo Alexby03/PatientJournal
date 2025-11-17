@@ -74,7 +74,6 @@ public class PractitionerService {
         return DTOMapper.toPractitionerDTO(practitioner, eager);
     }
 
-
     @Transactional
     public PractitionerDTO createPractitioner(PractitionerCreateDTO dto) {
         validateCreateDTO(dto);
@@ -127,7 +126,6 @@ public class PractitionerService {
     public long countPractitionersByOrganization(UUID organizationId) {
         return practitionerRepository.countByOrganization(organizationId);
     }
-
 
     private void validateCreateDTO(PractitionerCreateDTO dto) {
         if (dto.fullName == null || dto.fullName.isEmpty()) {

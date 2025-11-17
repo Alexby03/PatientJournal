@@ -22,7 +22,7 @@ public class EncounterResource {
     EncounterService encounterService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all encounters for a patient (optionally eager) */
@@ -67,7 +67,7 @@ public class EncounterResource {
     }
 
     // =======================
-    // POST Endpoints
+    // POST
     // =======================
 
     /** Create new encounter */
@@ -83,7 +83,7 @@ public class EncounterResource {
     }
 
     // =======================
-    // PUT Endpoints
+    // PUT
     // =======================
 
     /** Update encounter */
@@ -98,7 +98,7 @@ public class EncounterResource {
     }
 
     // =======================
-    // DELETE Endpoints
+    // DELETE
     // =======================
 
     /** Delete encounter */

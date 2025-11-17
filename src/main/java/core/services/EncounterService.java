@@ -30,13 +30,6 @@ public class EncounterService {
     @Inject
     PractitionerRepository practitionerRepository;
 
-    // -------------------------------
-    // GET METHODS
-    // -------------------------------
-
-    /**
-     * Get all encounters for a patient (lazy)
-     */
     public List<EncounterDTO> getPatientEncounters(UUID patientId, boolean eager) {
         Patient patient = patientRepository.findById(patientId);
         if (patient == null) {
@@ -52,9 +45,6 @@ public class EncounterService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get encounter by ID
-     */
     public EncounterDTO getEncounterById(UUID encounterId) {
         Encounter encounter = encounterRepository.findById(encounterId);
         if (encounter == null) {
@@ -63,13 +53,9 @@ public class EncounterService {
         return DTOMapper.toEncounterDTO(encounter);
     }
 
-    // -------------------------------
-    // CREATE
-    // -------------------------------
-
     @Transactional
     public EncounterDTO createEncounter(UUID patientId, UUID practitionerId, EncounterCreateDTO dto) {
-        // Validate DTO
+
         if (dto.description == null || dto.description.isEmpty()) {
             throw new IllegalArgumentException("Description is required");
         }
@@ -98,10 +84,6 @@ public class EncounterService {
         return DTOMapper.toEncounterDTO(encounter);
     }
 
-    // -------------------------------
-    // UPDATE
-    // -------------------------------
-
     @Transactional
     public EncounterDTO updateEncounter(UUID encounterId, EncounterUpdateDTO dto) {
         Encounter encounter = encounterRepository.findById(encounterId);
@@ -120,18 +102,10 @@ public class EncounterService {
         return DTOMapper.toEncounterDTO(encounter);
     }
 
-    // -------------------------------
-    // DELETE
-    // -------------------------------
-
     @Transactional
     public boolean deleteEncounter(UUID encounterId) {
         return encounterRepository.deleteById(encounterId);
     }
-
-    // -------------------------------
-    // OTHER QUERIES
-    // -------------------------------
 
     public List<EncounterDTO> getRecentEncounters(boolean eager) {
         List<Encounter> encounters = eager

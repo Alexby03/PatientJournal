@@ -21,7 +21,7 @@ public class MessageResource {
     MessageService messageService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all messages in a session */
@@ -60,7 +60,7 @@ public class MessageResource {
     }
 
     // =======================
-    // POST Endpoints
+    // POST
     // =======================
 
     /** Create a new message */
@@ -71,7 +71,7 @@ public class MessageResource {
     }
 
     // =======================
-    // DELETE Endpoints
+    // DELETE
     // =======================
 
     /** Delete a message */

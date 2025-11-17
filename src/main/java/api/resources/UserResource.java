@@ -23,7 +23,7 @@ public class UserResource {
     UserService userService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all users with pagination */
@@ -63,7 +63,7 @@ public class UserResource {
     }
 
     // =======================
-    // POST Endpoint
+    // POST
     // =======================
 
     /** Create a new user */
@@ -81,7 +81,7 @@ public class UserResource {
     }
 
     // =======================
-    // PUT Endpoint
+    // PUT
     // =======================
 
     /** Update user details */
@@ -93,7 +93,7 @@ public class UserResource {
     }
 
     // =======================
-    // DELETE Endpoint
+    // DELETE
     // =======================
 
     /** Delete a user */

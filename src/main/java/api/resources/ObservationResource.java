@@ -22,7 +22,7 @@ public class ObservationResource {
     ObservationService observationService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all observations for a patient */
@@ -61,7 +61,7 @@ public class ObservationResource {
     }
 
     // =======================
-    // POST Endpoint
+    // POST
     // =======================
 
     /** Create a new observation */
@@ -75,7 +75,7 @@ public class ObservationResource {
     }
 
     // =======================
-    // PUT Endpoint
+    // PUT
     // =======================
 
     /** Update an existing observation */
@@ -88,7 +88,7 @@ public class ObservationResource {
     }
 
     // =======================
-    // DELETE Endpoint
+    // DELETE
     // =======================
 
     /** Delete an observation */

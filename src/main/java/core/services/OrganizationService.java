@@ -25,10 +25,6 @@ public class OrganizationService {
     @Inject
     LocationRepository locationRepository;
 
-
-    /**
-     * Get all organizations with pagination
-     */
     public List<OrganizationDTO> getAllOrganizations(int pageIndex, int pageSize) {
         List<Organization> organizations = organizationRepository.findAllOrganizations(pageIndex, pageSize);
         return organizations.stream()
@@ -36,9 +32,6 @@ public class OrganizationService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get organization by ID
-     */
     public OrganizationDTO getOrganizationById(UUID organizationId) {
         Organization organization = organizationRepository.findById(organizationId);
         if (organization == null) {
@@ -47,9 +40,6 @@ public class OrganizationService {
         return DTOMapper.toOrganizationDTO(organization);
     }
 
-    /**
-     * Get organizations by type
-     */
     public List<OrganizationDTO> getOrganizationsByType(core.enums.OrganizationType organizationType) {
         List<Organization> organizations = organizationRepository.findByOrganizationType(organizationType);
         return organizations.stream()
@@ -57,9 +47,6 @@ public class OrganizationService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Count total organizations
-     */
     public long countOrganizations() {
         return organizationRepository.countTotalOrganizations();
     }

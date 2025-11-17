@@ -17,7 +17,6 @@ public class UserCreateDTO {
         this.userType = userType;
     }
 
-    // Getters and Setters
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
 

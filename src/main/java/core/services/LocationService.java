@@ -21,10 +21,6 @@ public class LocationService {
     @Inject
     LocationRepository locationRepository;
 
-
-    /**
-     * Get all locations
-     */
     public List<LocationDTO> getAllLocations() {
         List<Location> locations = locationRepository.findAllLocations();
         return locations.stream()
@@ -32,9 +28,6 @@ public class LocationService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get location by ID
-     */
     public LocationDTO getLocationById(UUID locationId) {
         Location location = locationRepository.findById(locationId);
         if (location == null) {
@@ -43,9 +36,6 @@ public class LocationService {
         return DTOMapper.toLocationDTO(location);
     }
 
-    /**
-     * Get locations by type
-     */
     public List<LocationDTO> getLocationsByType(LocationType locationType) {
         List<Location> locations = locationRepository.findByLocationType(locationType);
         return locations.stream()
@@ -53,13 +43,9 @@ public class LocationService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Count total locations
-     */
     public long countLocations() {
         return locationRepository.countTotalLocations();
     }
-
 
     @Transactional
     public LocationDTO createLocation(LocationCreateDTO dto) {
@@ -73,7 +59,6 @@ public class LocationService {
 
         return DTOMapper.toLocationDTO(location);
     }
-
 
     @Transactional
     public LocationDTO updateLocation(UUID locationId, LocationUpdateDTO dto) {
@@ -89,7 +74,6 @@ public class LocationService {
         locationRepository.persist(location);
         return DTOMapper.toLocationDTO(location);
     }
-
 
     @Transactional
     public boolean deleteLocation(UUID locationId) {

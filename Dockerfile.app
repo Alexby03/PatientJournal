@@ -19,11 +19,4 @@ COPY --from=build /build/target/quarkus-app/quarkus/ ./quarkus/
 
 EXPOSE 8080
 
-ENV QUARKUS_PROFILE=prod
-ENV QUARKUS_HTTP_HOST=0.0.0.0
-
-ENV QUARKUS_DATASOURCE_JDBC_URL=jdbc:mysql://host.docker.internal:3306/patientjournaldb
-ENV QUARKUS_DATASOURCE_USERNAME=db_admin
-ENV QUARKUS_DATASOURCE_PASSWORD=admin123
-
 CMD ["java", "-jar", "quarkus-run.jar"]

@@ -21,7 +21,7 @@ public class SessionResource {
     SessionService sessionService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all sessions for a user */
@@ -58,7 +58,7 @@ public class SessionResource {
     }
 
     // =======================
-    // POST Endpoint
+    // POST
     // =======================
 
     /** Create a new session */
@@ -69,7 +69,7 @@ public class SessionResource {
     }
 
     // =======================
-    // DELETE Endpoint
+    // DELETE
     // =======================
 
     /** Delete a session */
@@ -82,7 +82,7 @@ public class SessionResource {
     }
 
     // =======================
-    // Count endpoint
+    // Count
     // =======================
 
     /** Count all sessions for a user */

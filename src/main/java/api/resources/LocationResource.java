@@ -23,7 +23,7 @@ public class LocationResource {
     LocationService locationService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all locations */
@@ -54,7 +54,7 @@ public class LocationResource {
     }
 
     // =======================
-    // POST Endpoints
+    // POST
     // =======================
 
     /** Create a new location */
@@ -65,7 +65,7 @@ public class LocationResource {
     }
 
     // =======================
-    // PUT Endpoints
+    // PUT
     // =======================
 
     /** Update existing location */
@@ -78,7 +78,7 @@ public class LocationResource {
     }
 
     // =======================
-    // DELETE Endpoints
+    // DELETE
     // =======================
 
     /** Delete location */

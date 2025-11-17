@@ -22,19 +22,6 @@ public class PatientService {
     @Inject
     PatientRepository patientRepository;
 
-    @Inject
-    ConditionRepository conditionRepository;
-
-    @Inject
-    EncounterRepository encounterRepository;
-
-    @Inject
-    ObservationRepository observationRepository;
-
-
-    /**
-     * Get all patients with pagination
-     */
     public List<PatientDTO> getAllPatients(int pageIndex, int pageSize, boolean eager) {
         List<Patient> patients = eager
                 ? patientRepository.findAllPatientsWithRelations(pageIndex, pageSize)

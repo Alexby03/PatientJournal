@@ -23,7 +23,7 @@ public class PractitionerResource {
     PractitionerService practitionerService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all practitioners with pagination */
@@ -60,7 +60,7 @@ public class PractitionerResource {
     }
 
     // =======================
-    // POST Endpoint
+    // POST
     // =======================
 
     /** Create a new practitioner */
@@ -71,7 +71,7 @@ public class PractitionerResource {
     }
 
     // =======================
-    // PUT Endpoint
+    // PUT
     // =======================
 
     /** Update existing practitioner */
@@ -84,7 +84,7 @@ public class PractitionerResource {
     }
 
     // =======================
-    // DELETE Endpoint
+    // DELETE
     // =======================
 
     /** Delete practitioner */

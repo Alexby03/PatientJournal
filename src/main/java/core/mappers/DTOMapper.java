@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 public class DTOMapper {
 
-    // --- Condition ---
+    // Condition
     public static ConditionDTO toConditionDTO(Condition condition) {
         return new ConditionDTO(
                 condition.getConditionId(),
@@ -20,7 +20,7 @@ public class DTOMapper {
         );
     }
 
-    // --- Encounter ---
+    // Encounter
     public static EncounterDTO toEncounterDTO(Encounter encounter) {
         return new EncounterDTO(
                 encounter.getEncounterId(),
@@ -31,7 +31,7 @@ public class DTOMapper {
         );
     }
 
-    // --- Observation ---
+    // Observation
     public static ObservationDTO toObservationDTO(Observation observation) {
         return new ObservationDTO(
                 observation.getObservationId(),
@@ -42,7 +42,7 @@ public class DTOMapper {
         );
     }
 
-    // --- Patient ---
+    // Patient
     public static PatientDTO toPatientDTO(Patient patient, boolean eager) {
         PatientDTO dto = new PatientDTO();
         dto.id = patient.getId();
@@ -66,7 +66,7 @@ public class DTOMapper {
         return dto;
     }
 
-    // --- Practitioner ---
+    // Practitioner
     public static PractitionerDTO toPractitionerDTO(Practitioner practitioner, boolean eager) {
         PractitionerDTO dto = new PractitionerDTO();
         dto.id = practitioner.getId();
@@ -94,7 +94,7 @@ public class DTOMapper {
         return dto;
     }
 
-    // --- Organization ---
+    // Organization
     public static OrganizationDTO toOrganizationDTO(Organization org) {
         return new OrganizationDTO(
                 org.getOrganizationId(),
@@ -103,7 +103,7 @@ public class DTOMapper {
         );
     }
 
-    // --- Location ---
+    // Location
     public static LocationDTO toLocationDTO(Location location) {
         return new LocationDTO(
                 location.getLocationId(),
@@ -111,7 +111,7 @@ public class DTOMapper {
         );
     }
 
-    // --- Message ---
+    // Message
     public static MessageDTO toMessageDTO(Message message) {
         return new MessageDTO(
                 message.getMessageId(),
@@ -122,7 +122,7 @@ public class DTOMapper {
         );
     }
 
-    // --- Session ---
+    // Session
     public static SessionDTO toSessionDTO(Session session, boolean eagerMessages) {
         SessionDTO dto = new SessionDTO();
         dto.sessionId = session.getSessionId();

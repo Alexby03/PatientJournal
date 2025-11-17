@@ -29,9 +29,6 @@ public class MessageService {
     @Inject
     UserRepository userRepository;
 
-    /**
-     * Get all messages in a session
-     */
     public List<MessageDTO> getSessionMessages(UUID sessionId) {
         Session session = sessionRepository.findById(sessionId);
         if (session == null) {
@@ -43,9 +40,6 @@ public class MessageService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Get message by ID
-     */
     public MessageDTO getMessageById(UUID messageId) {
         Message message = messageRepository.findById(messageId);
         if (message == null) {
@@ -54,9 +48,6 @@ public class MessageService {
         return DTOMapper.toMessageDTO(message);
     }
 
-    /**
-     * Get latest message in a session
-     */
     public MessageDTO getLatestMessage(UUID sessionId) {
         Session session = sessionRepository.findById(sessionId);
         if (session == null) {
@@ -66,9 +57,6 @@ public class MessageService {
         return DTOMapper.toMessageDTO(latest);
     }
 
-    /**
-     * Search messages by content
-     */
     public List<MessageDTO> searchMessages(String searchTerm) {
         if (searchTerm == null || searchTerm.isEmpty()) {
             throw new IllegalArgumentException("Search term cannot be empty");
@@ -79,9 +67,6 @@ public class MessageService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Count messages in a session
-     */
     public long countSessionMessages(UUID sessionId) {
         return messageRepository.countBySession(sessionId);
     }

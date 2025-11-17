@@ -22,7 +22,7 @@ public class PatientResource {
     PatientService patientService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all patients with pagination */
@@ -68,7 +68,7 @@ public class PatientResource {
     }
 
     // =======================
-    // POST Endpoint
+    // POST
     // =======================
 
     /** Create a new patient */
@@ -79,7 +79,7 @@ public class PatientResource {
     }
 
     // =======================
-    // PUT Endpoint
+    // PUT
     // =======================
 
     /** Update existing patient */
@@ -91,7 +91,7 @@ public class PatientResource {
     }
 
     // =======================
-    // DELETE Endpoint
+    // DELETE
     // =======================
 
     /** Delete patient */

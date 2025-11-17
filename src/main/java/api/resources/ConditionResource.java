@@ -23,7 +23,7 @@ public class ConditionResource {
     ConditionService conditionService;
 
     // =======================
-    // GET Endpoints
+    // GET
     // =======================
 
     /** Get all conditions for a patient (optionally eager load) */
@@ -74,7 +74,7 @@ public class ConditionResource {
     }
 
     // =======================
-    // POST Endpoints
+    // POST
     // =======================
 
     /** Create new condition for patient and practitioner */
@@ -90,7 +90,7 @@ public class ConditionResource {
     }
 
     // =======================
-    // PUT Endpoints
+    // PUT
     // =======================
 
     /** Update existing condition */
@@ -105,7 +105,7 @@ public class ConditionResource {
     }
 
     // =======================
-    // DELETE Endpoints
+    // DELETE
     // =======================
 
     /** Delete condition by ID */
