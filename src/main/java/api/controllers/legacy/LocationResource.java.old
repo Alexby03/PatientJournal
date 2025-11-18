@@ -81,7 +81,7 @@ public class LocationResource {
 
     /** Delete location */
     @DELETE
-    @Path("/{locationId}")
+    @Path("locations/{locationId}")
     @Transactional
     public Response deleteLocation(@PathParam("locationId") UUID locationId) {
         boolean deleted = locationService.deleteLocation(locationId);
