@@ -1,8 +1,6 @@
-package api.resources;
+package api.controllers;
 
-import api.dto.ConditionCreateDTO;
 import api.dto.ConditionDTO;
-import api.dto.ConditionUpdateDTO;
 import core.enums.ConditionType;
 import core.services.ConditionService;
 
@@ -84,7 +82,7 @@ public class ConditionResource {
     public ConditionDTO createCondition(
             @PathParam("patientId") UUID patientId,
             @PathParam("practitionerId") UUID practitionerId,
-            ConditionCreateDTO dto
+            ConditionDTO dto
     ) {
         return conditionService.createCondition(patientId, practitionerId, dto);
     }
@@ -99,7 +97,7 @@ public class ConditionResource {
     @Transactional
     public ConditionDTO updateCondition(
             @PathParam("conditionId") UUID conditionId,
-            ConditionUpdateDTO dto
+            ConditionDTO dto
     ) {
         return conditionService.updateCondition(conditionId, dto);
     }

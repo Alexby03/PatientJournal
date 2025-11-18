@@ -14,8 +14,8 @@ public class LocationRepository implements PanacheRepositoryBase<Location, UUID>
     /**
      * Find locations by type
      */
-    public List<Location> findByLocationType(LocationType locationType) {
-        return find("locationType", locationType).list();
+    public Location findByLocationType(LocationType locationType) {
+        return find("locationType", locationType).firstResult();
     }
 
     /**

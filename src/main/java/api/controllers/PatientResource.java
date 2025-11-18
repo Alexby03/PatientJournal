@@ -1,8 +1,7 @@
-package api.resources;
+package api.controllers;
 
 import api.dto.PatientCreateDTO;
 import api.dto.PatientDTO;
-import api.dto.PatientUpdateDTO;
 import core.services.PatientService;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -86,7 +85,7 @@ public class PatientResource {
     @PUT
     @Path("/{patientId}")
     @Transactional
-    public PatientDTO updatePatient(@PathParam("patientId") UUID patientId, PatientUpdateDTO dto) {
+    public PatientDTO updatePatient(@PathParam("patientId") UUID patientId, PatientCreateDTO dto) {
         return patientService.updatePatient(patientId, dto);
     }
 

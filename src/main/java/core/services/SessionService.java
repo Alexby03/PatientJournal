@@ -1,6 +1,5 @@
 package core.services;
 
-import api.dto.SessionCreateDTO;
 import api.dto.SessionDTO;
 import core.mappers.DTOMapper;
 import data.entities.Message;
@@ -12,7 +11,6 @@ import data.repositories.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import jakarta.ws.rs.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -87,7 +85,7 @@ public class SessionService {
     }
 
     @Transactional
-    public SessionDTO createSession(SessionCreateDTO dto) {
+    public SessionDTO createSession(SessionDTO dto) {
         validateCreateDTO(dto);
 
         User sender = userRepository.findById(dto.senderId);
@@ -120,7 +118,7 @@ public class SessionService {
         return sessionRepository.countUserSessions(userId);
     }
 
-    private void validateCreateDTO(SessionCreateDTO dto) {
+    private void validateCreateDTO(SessionDTO dto) {
         if (dto.senderId == null) {
             throw new IllegalArgumentException("Sender ID is required");
         }

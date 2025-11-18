@@ -99,7 +99,7 @@ public class DTOMapper {
         return new OrganizationDTO(
                 org.getOrganizationId(),
                 org.getOrganizationType(),
-                org.getLocation() != null ? org.getLocation().getLocationType().name() : null
+                org.getLocation() != null ? org.getLocation().getLocationType() : null
         );
     }
 
@@ -107,7 +107,7 @@ public class DTOMapper {
     public static LocationDTO toLocationDTO(Location location) {
         return new LocationDTO(
                 location.getLocationId(),
-                location.getLocationType().name()
+                location.getLocationType()
         );
     }
 

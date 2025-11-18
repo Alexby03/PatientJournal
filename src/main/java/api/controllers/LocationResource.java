@@ -1,8 +1,6 @@
-package api.resources;
+package api.controllers;
 
-import api.dto.LocationCreateDTO;
 import api.dto.LocationDTO;
-import api.dto.LocationUpdateDTO;
 import core.enums.LocationType;
 import core.services.LocationService;
 
@@ -42,8 +40,8 @@ public class LocationResource {
     /** Get locations by type */
     @GET
     @Path("/type/{type}")
-    public List<LocationDTO> getLocationsByType(@PathParam("type") LocationType type) {
-        return locationService.getLocationsByType(type);
+    public LocationDTO getLocationByType(@PathParam("type") LocationType type) {
+        return locationService.getLocationByType(type);
     }
 
     /** Count total locations */
@@ -60,7 +58,7 @@ public class LocationResource {
     /** Create a new location */
     @POST
     @Transactional
-    public LocationDTO createLocation(LocationCreateDTO dto) {
+    public LocationDTO createLocation(LocationDTO dto) {
         return locationService.createLocation(dto);
     }
 
@@ -73,7 +71,7 @@ public class LocationResource {
     @Path("/{locationId}")
     @Transactional
     public LocationDTO updateLocation(@PathParam("locationId") UUID locationId,
-                                      LocationUpdateDTO dto) {
+                                      LocationDTO dto) {
         return locationService.updateLocation(locationId, dto);
     }
 

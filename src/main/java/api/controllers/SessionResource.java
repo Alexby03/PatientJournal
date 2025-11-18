@@ -1,6 +1,5 @@
-package api.resources;
+package api.controllers;
 
-import api.dto.SessionCreateDTO;
 import api.dto.SessionDTO;
 import core.services.SessionService;
 import jakarta.inject.Inject;
@@ -64,7 +63,7 @@ public class SessionResource {
     /** Create a new session */
     @POST
     @Transactional
-    public SessionDTO createSession(SessionCreateDTO dto) {
+    public SessionDTO createSession(SessionDTO dto) {
         return sessionService.createSession(dto);
     }
 

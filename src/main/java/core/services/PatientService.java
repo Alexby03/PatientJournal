@@ -111,7 +111,7 @@ public class PatientService {
 
 
     @Transactional
-    public PatientDTO updatePatient(UUID patientId, PatientUpdateDTO dto) {
+    public PatientDTO updatePatient(UUID patientId, PatientCreateDTO dto) {
         Patient patient = patientRepository.findById(patientId);
         if (patient == null) {
             throw new IllegalArgumentException("Patient not found");

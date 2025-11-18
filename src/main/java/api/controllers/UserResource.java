@@ -1,9 +1,8 @@
-package api.resources;
+package api.controllers;
 
 import api.dto.UserCreateDTO;
 import api.dto.UserDTO;
 import api.dto.UserLoginDTO;
-import api.dto.UserUpdateDTO;
 import core.services.UserService;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -88,7 +87,7 @@ public class UserResource {
     @PUT
     @Path("/{userId}")
     @Transactional
-    public UserDTO updateUser(@PathParam("userId") UUID userId, UserUpdateDTO dto) {
+    public UserDTO updateUser(@PathParam("userId") UUID userId, UserCreateDTO dto) {
         return userService.updateUser(userId, dto);
     }
 

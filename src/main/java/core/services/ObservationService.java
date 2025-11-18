@@ -1,8 +1,6 @@
 package core.services;
 
-import api.dto.ObservationCreateDTO;
 import api.dto.ObservationDTO;
-import api.dto.ObservationUpdateDTO;
 import core.mappers.DTOMapper;
 import data.entities.Observation;
 import data.entities.Patient;
@@ -73,7 +71,7 @@ public class ObservationService {
     }
 
     @Transactional
-    public ObservationDTO createObservation(UUID patientId, UUID practitionerId, ObservationCreateDTO dto) {
+    public ObservationDTO createObservation(UUID patientId, UUID practitionerId, ObservationDTO dto) {
         if (dto.description == null || dto.description.isEmpty()) {
             throw new IllegalArgumentException("Description is required");
         }
@@ -104,7 +102,7 @@ public class ObservationService {
 
 
     @Transactional
-    public ObservationDTO updateObservation(UUID observationId, ObservationUpdateDTO dto) {
+    public ObservationDTO updateObservation(UUID observationId, ObservationDTO dto) {
         Observation observation = observationRepository.findById(observationId);
         if (observation == null) {
             throw new IllegalArgumentException("Observation not found");

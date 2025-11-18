@@ -1,8 +1,6 @@
 package core.services;
 
 import api.dto.EncounterDTO;
-import api.dto.EncounterCreateDTO;
-import api.dto.EncounterUpdateDTO;
 import core.mappers.DTOMapper;
 import data.entities.Encounter;
 import data.entities.Patient;
@@ -54,7 +52,7 @@ public class EncounterService {
     }
 
     @Transactional
-    public EncounterDTO createEncounter(UUID patientId, UUID practitionerId, EncounterCreateDTO dto) {
+    public EncounterDTO createEncounter(UUID patientId, UUID practitionerId, EncounterDTO dto) {
 
         if (dto.description == null || dto.description.isEmpty()) {
             throw new IllegalArgumentException("Description is required");
@@ -85,7 +83,7 @@ public class EncounterService {
     }
 
     @Transactional
-    public EncounterDTO updateEncounter(UUID encounterId, EncounterUpdateDTO dto) {
+    public EncounterDTO updateEncounter(UUID encounterId, EncounterDTO dto) {
         Encounter encounter = encounterRepository.findById(encounterId);
         if (encounter == null) {
             throw new IllegalArgumentException("Encounter not found");

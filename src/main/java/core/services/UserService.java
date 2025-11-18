@@ -2,9 +2,6 @@ package core.services;
 
 import api.dto.UserCreateDTO;
 import api.dto.UserDTO;
-import api.dto.UserLoginDTO;
-import api.dto.UserUpdateDTO;
-import core.enums.UserType;
 import data.entities.Patient;
 import data.entities.User;
 import data.repositories.UserRepository;
@@ -64,7 +61,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserDTO updateUser(UUID userId, UserUpdateDTO dto) {
+    public UserDTO updateUser(UUID userId, UserCreateDTO dto) {
         User user = userRepository.findById(userId);
         if (user == null) {
             throw new IllegalArgumentException("User not found");

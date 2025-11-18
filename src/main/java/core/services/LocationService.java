@@ -1,8 +1,6 @@
 package core.services;
 
 import api.dto.LocationDTO;
-import api.dto.LocationCreateDTO;
-import api.dto.LocationUpdateDTO;
 import core.mappers.DTOMapper;
 import data.entities.Location;
 import data.repositories.LocationRepository;
@@ -36,11 +34,9 @@ public class LocationService {
         return DTOMapper.toLocationDTO(location);
     }
 
-    public List<LocationDTO> getLocationsByType(LocationType locationType) {
-        List<Location> locations = locationRepository.findByLocationType(locationType);
-        return locations.stream()
-                .map(DTOMapper::toLocationDTO)
-                .collect(Collectors.toList());
+    public LocationDTO getLocationByType(LocationType locationType) {
+        Location location = locationRepository.findByLocationType(locationType);
+        return DTOMapper.toLocationDTO(location);
     }
 
     public long countLocations() {
@@ -48,7 +44,7 @@ public class LocationService {
     }
 
     @Transactional
-    public LocationDTO createLocation(LocationCreateDTO dto) {
+    public LocationDTO createLocation(LocationDTO dto) {
         if (dto.locationType == null) {
             throw new IllegalArgumentException("Location type is required");
         }
@@ -61,7 +57,7 @@ public class LocationService {
     }
 
     @Transactional
-    public LocationDTO updateLocation(UUID locationId, LocationUpdateDTO dto) {
+    public LocationDTO updateLocation(UUID locationId, LocationDTO dto) {
         Location location = locationRepository.findById(locationId);
         if (location == null) {
             throw new IllegalArgumentException("Location not found");

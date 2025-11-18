@@ -1,9 +1,7 @@
-package api.resources;
+package api.controllers;
 
-import api.dto.PatientDTO;
 import api.dto.PractitionerCreateDTO;
 import api.dto.PractitionerDTO;
-import api.dto.PractitionerUpdateDTO;
 import core.services.PractitionerService;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -79,7 +77,7 @@ public class PractitionerResource {
     @Path("/{practitionerId}")
     @Transactional
     public PractitionerDTO updatePractitioner(@PathParam("practitionerId") UUID practitionerId,
-                                              PractitionerUpdateDTO dto) {
+                                              PractitionerCreateDTO dto) {
         return practitionerService.updatePractitioner(practitionerId, dto);
     }
 

@@ -1,13 +1,10 @@
 package core.services;
 
-import api.dto.PatientDTO;
 import api.dto.PractitionerCreateDTO;
 import api.dto.PractitionerDTO;
-import api.dto.PractitionerUpdateDTO;
 import core.enums.UserType;
 import core.mappers.DTOMapper;
 import data.entities.Organization;
-import data.entities.Patient;
 import data.entities.Practitioner;
 import data.repositories.OrganizationRepository;
 import data.repositories.PractitionerRepository;
@@ -101,7 +98,7 @@ public class PractitionerService {
     }
 
     @Transactional
-    public PractitionerDTO updatePractitioner(UUID practitionerId, PractitionerUpdateDTO dto) {
+    public PractitionerDTO updatePractitioner(UUID practitionerId, PractitionerCreateDTO dto) {
         Practitioner practitioner = practitionerRepository.findById(practitionerId);
         if (practitioner == null) {
             throw new IllegalArgumentException("Practitioner not found");

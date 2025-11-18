@@ -1,14 +1,11 @@
-package api.resources;
+package api.controllers;
 
-import api.dto.OrganizationCreateDTO;
 import api.dto.OrganizationDTO;
-import api.dto.OrganizationUpdateDTO;
 import core.services.OrganizationService;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 import java.util.UUID;
@@ -60,7 +57,7 @@ public class OrganizationResource {
     /** Create a new organization */
     @POST
     @Transactional
-    public OrganizationDTO createOrganization(OrganizationCreateDTO dto) {
+    public OrganizationDTO createOrganization(OrganizationDTO dto) {
         return organizationService.createOrganization(dto);
     }
 
@@ -73,7 +70,7 @@ public class OrganizationResource {
     @Path("/{organizationId}")
     @Transactional
     public OrganizationDTO updateOrganization(@PathParam("organizationId") UUID organizationId,
-                                              OrganizationUpdateDTO dto) {
+                                              OrganizationDTO dto) {
         return organizationService.updateOrganization(organizationId, dto);
     }
 }

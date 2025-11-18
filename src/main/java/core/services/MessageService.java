@@ -1,7 +1,6 @@
 package core.services;
 
 import api.dto.MessageDTO;
-import api.dto.MessageCreateDTO;
 import core.mappers.DTOMapper;
 import data.entities.Message;
 import data.entities.Session;
@@ -72,7 +71,7 @@ public class MessageService {
     }
 
     @Transactional
-    public MessageDTO createMessage(MessageCreateDTO dto) {
+    public MessageDTO createMessage(MessageDTO dto) {
         if (dto.sessionId == null) {
             throw new IllegalArgumentException("Session ID is required");
         }

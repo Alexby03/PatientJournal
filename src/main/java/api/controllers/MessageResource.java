@@ -1,6 +1,5 @@
-package api.resources;
+package api.controllers;
 
-import api.dto.MessageCreateDTO;
 import api.dto.MessageDTO;
 import core.services.MessageService;
 import jakarta.inject.Inject;
@@ -66,7 +65,7 @@ public class MessageResource {
     /** Create a new message */
     @POST
     @Transactional
-    public MessageDTO createMessage(MessageCreateDTO dto) {
+    public MessageDTO createMessage(MessageDTO dto) {
         return messageService.createMessage(dto);
     }
 

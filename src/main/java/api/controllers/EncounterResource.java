@@ -1,8 +1,6 @@
-package api.resources;
+package api.controllers;
 
-import api.dto.EncounterCreateDTO;
 import api.dto.EncounterDTO;
-import api.dto.EncounterUpdateDTO;
 import core.services.EncounterService;
 
 import jakarta.inject.Inject;
@@ -77,7 +75,7 @@ public class EncounterResource {
     public EncounterDTO createEncounter(
             @PathParam("patientId") UUID patientId,
             @PathParam("practitionerId") UUID practitionerId,
-            EncounterCreateDTO dto
+            EncounterDTO dto
     ) {
         return encounterService.createEncounter(patientId, practitionerId, dto);
     }
@@ -92,7 +90,7 @@ public class EncounterResource {
     @Transactional
     public EncounterDTO updateEncounter(
             @PathParam("encounterId") UUID encounterId,
-            EncounterUpdateDTO dto
+            EncounterDTO dto
     ) {
         return encounterService.updateEncounter(encounterId, dto);
     }

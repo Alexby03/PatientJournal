@@ -1,8 +1,6 @@
-package api.resources;
+package api.controllers;
 
-import api.dto.ObservationCreateDTO;
 import api.dto.ObservationDTO;
-import api.dto.ObservationUpdateDTO;
 import core.services.ObservationService;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -70,7 +68,7 @@ public class ObservationResource {
     @Transactional
     public ObservationDTO createObservation(@PathParam("patientId") UUID patientId,
                                             @PathParam("practitionerId") UUID practitionerId,
-                                            ObservationCreateDTO dto) {
+                                            ObservationDTO dto) {
         return observationService.createObservation(patientId, practitionerId, dto);
     }
 
@@ -83,7 +81,7 @@ public class ObservationResource {
     @Path("/{observationId}")
     @Transactional
     public ObservationDTO updateObservation(@PathParam("observationId") UUID observationId,
-                                            ObservationUpdateDTO dto) {
+                                            ObservationDTO dto) {
         return observationService.updateObservation(observationId, dto);
     }
 

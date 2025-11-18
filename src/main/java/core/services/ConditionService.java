@@ -1,8 +1,6 @@
 package core.services;
 
-import api.dto.ConditionCreateDTO;
 import api.dto.ConditionDTO;
-import api.dto.ConditionUpdateDTO;
 import core.mappers.DTOMapper;
 import data.entities.Condition;
 import data.entities.Patient;
@@ -72,7 +70,7 @@ public class ConditionService {
     }
 
     @Transactional
-    public ConditionDTO createCondition(UUID patientId, UUID practitionerId, ConditionCreateDTO dto) {
+    public ConditionDTO createCondition(UUID patientId, UUID practitionerId, ConditionDTO dto) {
         validateConditionDTO(dto);
 
         Patient patient = patientRepository.findById(patientId);
@@ -99,7 +97,7 @@ public class ConditionService {
     }
 
     @Transactional
-    public ConditionDTO updateCondition(UUID conditionId, ConditionUpdateDTO dto) {
+    public ConditionDTO updateCondition(UUID conditionId, ConditionDTO dto) {
         Condition condition = conditionRepository.findById(conditionId);
         if (condition == null) {
             throw new IllegalArgumentException("Condition not found");
@@ -146,7 +144,7 @@ public class ConditionService {
         return conditionRepository.countByPatient(patientId);
     }
 
-    private void validateConditionDTO(ConditionCreateDTO dto) {
+    private void validateConditionDTO(ConditionDTO dto) {
         if (dto.conditionName == null || dto.conditionName.isEmpty()) {
             throw new IllegalArgumentException("Condition name is required");
         }

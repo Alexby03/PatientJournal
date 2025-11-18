@@ -1,8 +1,6 @@
 package core.services;
 
-import api.dto.OrganizationCreateDTO;
 import api.dto.OrganizationDTO;
-import api.dto.OrganizationUpdateDTO;
 import core.mappers.DTOMapper;
 import data.entities.Location;
 import data.entities.Organization;
@@ -53,15 +51,15 @@ public class OrganizationService {
 
 
     @Transactional
-    public OrganizationDTO createOrganization(OrganizationCreateDTO dto) {
+    public OrganizationDTO createOrganization(OrganizationDTO dto) {
         if (dto.organizationType == null) {
             throw new IllegalArgumentException("Organization type is required");
         }
-        if (dto.locationId == null) {
+        if (dto.organizationId == null) {
             throw new IllegalArgumentException("Location ID is required");
         }
 
-        Location location = locationRepository.findById(dto.locationId);
+        Location location = locationRepository.findByLocationType(dto.locationType);
         if (location == null) {
             throw new IllegalArgumentException("Location not found");
         }
@@ -74,7 +72,7 @@ public class OrganizationService {
 
 
     @Transactional
-    public OrganizationDTO updateOrganization(UUID organizationId, OrganizationUpdateDTO dto) {
+    public OrganizationDTO updateOrganization(UUID organizationId, OrganizationDTO dto) {
         Organization organization = organizationRepository.findById(organizationId);
         if (organization == null) {
             throw new IllegalArgumentException("Organization not found");
@@ -84,8 +82,8 @@ public class OrganizationService {
             organization.setOrganizationType(dto.organizationType);
         }
 
-        if (dto.locationId != null) {
-            Location location = locationRepository.findById(dto.locationId);
+        if (dto.locationType != null) {
+            Location location = locationRepository.findByLocationType(dto.locationType);
             if (location == null) {
                 throw new IllegalArgumentException("Location not found");
             }
