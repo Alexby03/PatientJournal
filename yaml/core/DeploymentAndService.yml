@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core
+  namespace: patientjournal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: core
+  template:
+    metadata:
+      labels:
+        app: core
+    spec:
+      containers:
+        - name: core
+          image: niftyfall/patientjournal_app
+          ports:
+            - containerPort: 8080
+          env:
+          - name: QUARKUS_PROFILE
+            value: prod
+          - name: QUARKUS_HTTP_HOST
+            value: "0.0.0.0"
+          - name: QUARKUS_DATASOURCE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: core-db-secret
+                key: DB_USER
+          - name: QUARKUS_DATASOURCE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: core-db-secret
+                key: DB_PASSWORD
+          - name: QUARKUS_DATASOURCE_JDBC_URL
+            value: jdbc:mysql://mysql:3306/patientjournaldb
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: core
+  namespace: patientjournal
+spec:
+  selector:
+    app: core
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
